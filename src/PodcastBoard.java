@@ -1,5 +1,6 @@
 import java.awt.*;
 
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -56,19 +57,13 @@ public class PodcastBoard {
         PodcastBoard pb = new PodcastBoard();
         pb.initProgram();
 
-        JFrame frame = pb.setupGui(width, height);
+        ArrayList<JPanel> podcastPanels = new ArrayList<>();
 
-        ArrayList<JPanel> podcastPanels = new ArrayList<JPanel>();
+        //podcastPanels.add(pb.createPodcastPanel("Forehead Fables", "- Ep."));
+        //podcastPanels.add(pb.createPodcastPanel("Linus Tech Tips", "WAN Show"));
 
-        podcastPanels.add(pb.createPodcastPanel("Forehead Fables", "- Ep."));
-        podcastPanels.add(pb.createPodcastPanel("Linus Tech Tips", "WAN Show"));
 
-        JPanel panel = new JPanel();
-
-        podcastPanels.forEach(panel::add);
-
-        frame.add(panel);
-        frame.setVisible(true);
+        pb.setupGui(width, height, podcastPanels);
     }
 
 
@@ -118,7 +113,6 @@ public class PodcastBoard {
         JLabel videoTitle = new JLabel(jsonByHitIndex("title", 0, videoJson));
         videoTitle.setFont(new Font("Arial", Font.BOLD, 16));
 
-
         JPanel podcastEp  = new JPanel();
         podcastEp.setLayout(new BoxLayout(podcastEp, BoxLayout.Y_AXIS));
         podcastEp.add(thumbnail);
@@ -146,20 +140,56 @@ public class PodcastBoard {
         return Toolkit.getDefaultToolkit().getImage(url);
     }
 
-    private JFrame setupGui(int width, int height) {
-        JFrame frame = new JFrame();
+    private void setupGui(int width, int height, ArrayList<JPanel> podcastPanels) {
+        JFrame frame = new JFrame("Podcast Board");
         frame.setSize(width, height);
-        frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        final CardLayout cl = new CardLayout();
-        final JPanel cards = new JPanel(cl);
+        JPanel cards = new JPanel();
+        frame.setLayout(new BorderLayout());
+
+        Image settingImage = imgFromRelPath("resources/settings_icon.png").getScaledInstance(40, 40, Image.SCALE_DEFAULT);
+
+        JButton toPodcastsButton = new JButton(new ImageIcon(settingImage));
+        toPodcastsButton.setBorder(BorderFactory.createEmptyBorder());
+        toPodcastsButton.setContentAreaFilled(false);
+        JPanel podcastPanel  = new JPanel(new BorderLayout());
+        JPanel podcastPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel podcastPanelBot = new JPanel(new FlowLayout());
+        podcastPanel.add(podcastPanelTop, BorderLayout.NORTH);
+        podcastPanel.add(podcastPanelBot, BorderLayout.CENTER);
+
+        JButton toSettingsButton = new JButton(new ImageIcon(settingImage));
+        toSettingsButton.setBorder(BorderFactory.createEmptyBorder());
+        toSettingsButton.setContentAreaFilled(false);
+        JPanel settingsPanel = new JPanel(new BorderLayout());
+        JPanel settingsPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel settingsPanelBot = new JPanel(new FlowLayout());
+        settingsPanel.add(settingsPanelTop, BorderLayout.NORTH);
+        settingsPanel.add(settingsPanelBot, BorderLayout.CENTER);
+
+        podcastPanelTop.add(toSettingsButton);
+        settingsPanelTop.add(toPodcastsButton);
+
+        CardLayout cl = new CardLayout();
+        cards.setLayout(cl);
+
+        cards.add(podcastPanel, "1");
+        cards.add(settingsPanel, "2");
+        cl.show(cards, "1");
+
+        ActionListener switchButtonListner = e -> cl.next(cards);
+
+        toPodcastsButton.addActionListener(switchButtonListner);
+        toSettingsButton.addActionListener(switchButtonListner);
+
+        podcastPanels.forEach(podcastPanel::add);
+
         frame.add(cards);
 
         Image icon = imgFromRelPath(ICON_PATH);
         frame.setIconImage(icon);
-
-        return frame;
+        frame.setVisible(true);
     }
 
     public String jsonByHitIndex(String key, int index, String json) {

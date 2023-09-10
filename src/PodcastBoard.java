@@ -59,8 +59,8 @@ public class PodcastBoard {
 
         ArrayList<JPanel> podcastPanels = new ArrayList<>();
 
-        //podcastPanels.add(pb.createPodcastPanel("Forehead Fables", "- Ep."));
-        //podcastPanels.add(pb.createPodcastPanel("Linus Tech Tips", "WAN Show"));
+        podcastPanels.add(pb.createPodcastPanel("Forehead Fables", "- Ep."));
+        podcastPanels.add(pb.createPodcastPanel("Linus Tech Tips", "WAN Show"));
 
 
         pb.setupGui(width, height, podcastPanels);

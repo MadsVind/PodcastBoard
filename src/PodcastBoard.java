@@ -1,11 +1,8 @@
 import java.awt.*;
 
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
@@ -25,10 +22,11 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /* TODO
- * - Get channel by channel name
- * - Make class to switch space with %20 in search param string
+ * - Add functionality add, delete and edit channels
+ * - Add a way to enter user api_key
+ * - Add way to lock and or change window size
  * - Make gui with which the user, ME!, can use.
- * - format
+ * - format into MVC
  * - comment
  */
 
@@ -44,7 +42,10 @@ public class PodcastBoard {
     static String SEARCH_PARAM_EP      = "&q=";
     static String API_KEY_EP           = "&key=";
 
-    //Image relative paths
+    //Paths
+    static String DIR_PATH            = "";
+    static String PODCASTS_FILE_PATH  = "\\resources\\PODCASTS.ser";
+    //Image Relative paths
     static String ICON_PATH           = "resources/PodcastBoardIcon.png";
     static String SETTINGS_IMAGE_PATH = "resources/settings_icon.png";
 
@@ -63,9 +64,12 @@ public class PodcastBoard {
         pb.run();
     }
 
+    private void initDirPath() {
+        DIR_PATH = new File("").getAbsolutePath() + "\\src";
+    }
+
     private void initApiKey() {
-        String dirPAth = new File("").getAbsolutePath();
-        apiKey = fileToStr(dirPAth + "\\src\\resources\\API_KEY.txt");
+        apiKey = fileToStr(DIR_PATH + "\\resources\\API_KEY.txt");
         if (apiKey == null) System.exit(0);
     }
 
@@ -117,6 +121,7 @@ public class PodcastBoard {
     }
 
     private void run() throws Exception {
+        initDirPath();
         initApiKey();
 
         JFrame frame = new JFrame("Podcast Board");
@@ -178,13 +183,13 @@ public class PodcastBoard {
         return podcastPanel;
     }
 
-    public JPanel createSettingsPanel(CardLayout cl, JPanel cards) {
+    public JPanel createSettingsPanel(CardLayout cl, JPanel cards) throws Exception {
         JPanel settingsPanel = new JPanel(new BorderLayout());
         JPanel settingsPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JPanel settingsPanelBot = new JPanel(new FlowLayout());
 
         settingsPanel.add(settingsPanelTop, BorderLayout.NORTH);
-        settingsPanel.add(settingsPanelBot, BorderLayout.CENTER);
+        settingsPanel.add(settingsPanelBot, BorderLayout.WEST);
 
         JButton toPodcastsButton = createImageButton(SETTINGS_IMAGE_PATH);
 
@@ -193,14 +198,120 @@ public class PodcastBoard {
         toPodcastsButton.addActionListener(switchButtonListner);
         settingsPanelTop.add(toPodcastsButton);
 
+        JPanel addPodcastPanel = createPodcastPanel();
+
+        settingsPanelBot.add(addPodcastPanel);
+
+        return settingsPanel;
+    }
+
+    public JPanel createPodcastPanel() throws Exception {
         JPanel addPodcastPanel = new JPanel();
         JPanel addDelPanel     = new JPanel();
         JPanel podcastsPanel   = new JPanel();
 
+        addDelPanel.setBackground(Color.GRAY);
+
+        addPodcastPanel.add(addDelPanel);
+        addPodcastPanel.add(podcastsPanel);
+
+        JButton addPodcast = new JButton("+");
+        JButton delPodcast = new JButton("-");
+
+        addDelPanel.add(addPodcast);
+        addDelPanel.add(delPodcast);
+
+        ArrayList<Podcast> podcasts;
+        if (fileExists(PODCASTS_FILE_PATH)) {
+            podcasts = readPodcastListFromFile(PODCASTS_FILE_PATH);
+        } else {
+            podcasts = new ArrayList<>();
+        }
+
+        Podcast FF = new Podcast("Forehead Fables Podcast");
+        FF.addParam("Ep.");
 
 
-        return settingsPanel;
+        podcasts.add(FF);
+
+        //Add table titles
+        ArrayList<String> columnNames = new ArrayList<>();
+        columnNames.add("Channel");
+        int paramAmount = mostParams(podcasts);
+        for (int i = 1; i <= paramAmount; i++) {
+            columnNames.add("param " + i);
+        }
+
+
+        String[][] podcastsInfoLists = new String[podcasts.size()][paramAmount+1];
+
+        System.out.println();
+        for (int i = 0; i < podcasts.size(); i++) {
+            for (int j = 0; j <= paramAmount; j++) {
+                Podcast podcast = podcasts.get(i);
+
+                if (j == 0) {
+                    podcastsInfoLists[i][0] = podcast.getName();
+                }
+                else if (j <= podcast.getParamAmount()) {
+                    podcastsInfoLists[i][j] = podcast.getParams().get(j-1);
+                }
+                else podcastsInfoLists[i][j] = "";
+            }
+        }
+
+        JTable table      = new JTable(podcastsInfoLists, columnNames.toArray());
+        podcastsPanel.add(table);
+
+        return addPodcastPanel;
     }
+
+    private int mostParams(ArrayList<Podcast> podcasts) {
+        int mostParams = 0;
+        for (Podcast podcast : podcasts) {
+            int tempAmount = podcast.getParamAmount();
+            if (tempAmount > mostParams) mostParams = tempAmount;
+        }
+        return mostParams;
+    }
+
+    public boolean fileExists(String fileRelativePath) {
+        String filePath = DIR_PATH + "\\" + fileRelativePath;
+        File file = new File(filePath);
+        return file.exists();
+    }
+
+    public void writePodcastListToFile(ArrayList<Podcast> obj, String fileRelativePath) throws Exception {
+        String filePath = DIR_PATH + "\\" + fileRelativePath;
+        File file = new File(filePath);
+        if (file.exists()) file.delete();
+        try  {
+            FileOutputStream fileoutputStream = new FileOutputStream(DIR_PATH + "\\" + fileRelativePath);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileoutputStream);
+            objectOutputStream.writeObject(obj);
+
+            println("");
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+    public ArrayList<Podcast> readPodcastListFromFile(String fileName) throws Exception {
+        try {
+            FileInputStream fileInputStream = new FileInputStream(fileName);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+            ArrayList<Podcast> podcastList = (ArrayList<Podcast>) objectInputStream.readObject();
+
+            fileInputStream.close();
+            objectInputStream.close();
+
+            return podcastList;
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+
+    //public int mostParams()
 
     public JButton createImageButton(String imagePath) {
         Image settingImage = imgFromRelPath(imagePath).getScaledInstance(40, 40, Image.SCALE_DEFAULT);

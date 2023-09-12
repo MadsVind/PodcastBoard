@@ -33,7 +33,7 @@ import javax.swing.*;
  */
 
 public class PodcastBoard {
-    // EP = EndPoint
+    //EP (Endpoints) for different used parts of the YouTube v3 api
     static String YOUTUBE_EP           = "https://youtube.googleapis.com/youtube/v3/";
     static String SEARCH_EP            = YOUTUBE_EP + "search?";
     static String CHANNEL_SEARCH_EP    = SEARCH_EP + "type=channel";
@@ -44,30 +44,26 @@ public class PodcastBoard {
     static String SEARCH_PARAM_EP      = "&q=";
     static String API_KEY_EP           = "&key=";
 
-    static String ICON_PATH = "resources/PodcastBoardIcon.png";
+    //Image relative paths
+    static String ICON_PATH           = "resources/PodcastBoardIcon.png";
+    static String SETTINGS_IMAGE_PATH = "resources/settings_icon.png";
+
+    //Frame settings
+    static int FRAME_WIDTH  = 1200;
+    static int FRAME_HEIGHT = 800;
 
     static HttpClient httpClient = HttpClient.newHttpClient();
 
+    //Api settings
+    static boolean USE_API = false;
     static String apiKey = "";
 
     public static void main(String[] args) throws Exception {
-        int width  = 800;
-        int height = 800;
-
         PodcastBoard pb = new PodcastBoard();
-        pb.initProgram();
-
-        ArrayList<JPanel> podcastPanels = new ArrayList<>();
-
-        podcastPanels.add(pb.createPodcastPanel("Forehead Fables", "- Ep."));
-        podcastPanels.add(pb.createPodcastPanel("Linus Tech Tips", "WAN Show"));
-
-
-        pb.setupGui(width, height, podcastPanels);
+        pb.run();
     }
 
-
-    private void initProgram() {
+    private void initApiKey() {
         String dirPAth = new File("").getAbsolutePath();
         apiKey = fileToStr(dirPAth + "\\src\\resources\\API_KEY.txt");
         if (apiKey == null) System.exit(0);
@@ -78,26 +74,6 @@ public class PodcastBoard {
         parent.remove(label);
         parent.validate();
         parent.repaint();
-    }
-
-    // Taken from https://www.codejava.net/java-se/file-io/how-to-read-and-write-text-file-in-java
-    public static String fileToStr(String fileName) {
-        try {
-            FileReader reader = new FileReader(fileName);
-            BufferedReader bufferedReader = new BufferedReader(reader);
-
-            String lineStr;
-            String fileStr = "";
-
-            while ((lineStr = bufferedReader.readLine()) != null) {
-                fileStr += lineStr;
-            }
-            reader.close();
-            return fileStr;
-
-        } catch (IOException e) {
-            return null;
-        }
     }
 
     private JPanel createPodcastPanel(String channelName, String searchParam) throws Exception {
@@ -140,56 +116,99 @@ public class PodcastBoard {
         return Toolkit.getDefaultToolkit().getImage(url);
     }
 
-    private void setupGui(int width, int height, ArrayList<JPanel> podcastPanels) {
+    private void run() throws Exception {
+        initApiKey();
+
         JFrame frame = new JFrame("Podcast Board");
-        frame.setSize(width, height);
+        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel cards = new JPanel();
         frame.setLayout(new BorderLayout());
 
-        Image settingImage = imgFromRelPath("resources/settings_icon.png").getScaledInstance(40, 40, Image.SCALE_DEFAULT);
-
-        JButton toPodcastsButton = new JButton(new ImageIcon(settingImage));
-        toPodcastsButton.setBorder(BorderFactory.createEmptyBorder());
-        toPodcastsButton.setContentAreaFilled(false);
-        JPanel podcastPanel  = new JPanel(new BorderLayout());
-        JPanel podcastPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JPanel podcastPanelBot = new JPanel(new FlowLayout());
-        podcastPanel.add(podcastPanelTop, BorderLayout.NORTH);
-        podcastPanel.add(podcastPanelBot, BorderLayout.CENTER);
-
-        JButton toSettingsButton = new JButton(new ImageIcon(settingImage));
-        toSettingsButton.setBorder(BorderFactory.createEmptyBorder());
-        toSettingsButton.setContentAreaFilled(false);
-        JPanel settingsPanel = new JPanel(new BorderLayout());
-        JPanel settingsPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JPanel settingsPanelBot = new JPanel(new FlowLayout());
-        settingsPanel.add(settingsPanelTop, BorderLayout.NORTH);
-        settingsPanel.add(settingsPanelBot, BorderLayout.CENTER);
-
-        podcastPanelTop.add(toSettingsButton);
-        settingsPanelTop.add(toPodcastsButton);
-
-        CardLayout cl = new CardLayout();
-        cards.setLayout(cl);
-
-        cards.add(podcastPanel, "1");
-        cards.add(settingsPanel, "2");
-        cl.show(cards, "1");
-
-        ActionListener switchButtonListner = e -> cl.next(cards);
-
-        toPodcastsButton.addActionListener(switchButtonListner);
-        toSettingsButton.addActionListener(switchButtonListner);
-
-        podcastPanels.forEach(podcastPanel::add);
+        JPanel cards = createCardLayout();
 
         frame.add(cards);
 
         Image icon = imgFromRelPath(ICON_PATH);
         frame.setIconImage(icon);
         frame.setVisible(true);
+    }
+
+    public JPanel createCardLayout() throws Exception {
+        JPanel cards = new JPanel();
+
+        CardLayout cl = new CardLayout();
+
+        cards.setLayout(cl);
+
+        JPanel podcastPanel = createPodcastPanel(cl, cards);
+        JPanel settingsPanel = createSettingsPanel(cl, cards);
+
+        cards.add(podcastPanel, "1");
+        cards.add(settingsPanel, "2");
+        cl.show(cards, "1");
+        return cards;
+    }
+
+    // make function for splitpanel
+    public JPanel createPodcastPanel(CardLayout cl, JPanel cards) throws Exception {
+        JPanel podcastPanel  = new JPanel(new BorderLayout());
+        JPanel podcastPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel podcastPanelBot = new JPanel(new FlowLayout());
+
+        podcastPanel.add(podcastPanelTop, BorderLayout.NORTH);
+        podcastPanel.add(podcastPanelBot, BorderLayout.CENTER);
+
+        JButton toSettingsButton = createImageButton("resources/settings_icon.png");
+
+        ActionListener switchButtonListener = e -> cl.next(cards);
+
+        toSettingsButton.addActionListener(switchButtonListener);
+        podcastPanelTop.add(toSettingsButton);
+
+        ArrayList<JPanel> podcastPanels = new ArrayList<>();
+
+        if (USE_API) {
+            podcastPanels.add(createPodcastPanel("Forehead Fables", "- Ep."));
+            podcastPanels.add(createPodcastPanel("Linus Tech Tips", "WAN Show"));
+        }
+
+        podcastPanels.forEach(podcastPanelBot::add);
+
+        return podcastPanel;
+    }
+
+    public JPanel createSettingsPanel(CardLayout cl, JPanel cards) {
+        JPanel settingsPanel = new JPanel(new BorderLayout());
+        JPanel settingsPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel settingsPanelBot = new JPanel(new FlowLayout());
+
+        settingsPanel.add(settingsPanelTop, BorderLayout.NORTH);
+        settingsPanel.add(settingsPanelBot, BorderLayout.CENTER);
+
+        JButton toPodcastsButton = createImageButton(SETTINGS_IMAGE_PATH);
+
+        ActionListener switchButtonListner = e -> cl.next(cards);
+
+        toPodcastsButton.addActionListener(switchButtonListner);
+        settingsPanelTop.add(toPodcastsButton);
+
+        JPanel addPodcastPanel = new JPanel();
+        JPanel addDelPanel     = new JPanel();
+        JPanel podcastsPanel   = new JPanel();
+
+
+
+        return settingsPanel;
+    }
+
+    public JButton createImageButton(String imagePath) {
+        Image settingImage = imgFromRelPath(imagePath).getScaledInstance(40, 40, Image.SCALE_DEFAULT);
+        JButton toPodcastsButton = new JButton(new ImageIcon(settingImage));
+        toPodcastsButton.setBorder(BorderFactory.createEmptyBorder());
+        toPodcastsButton.setContentAreaFilled(false);
+
+        return toPodcastsButton;
     }
 
     public String jsonByHitIndex(String key, int index, String json) {
@@ -208,7 +227,6 @@ public class PodcastBoard {
         return getResponse.body();
     }
 
-
     public String searchVideoJson(String searchParam, String channelId) throws Exception {
         String maxResults = "1";
         String order = "date";
@@ -226,6 +244,26 @@ public class PodcastBoard {
                         MAX_RESULTS_EP + maxResults +
                         SEARCH_PARAM_EP + channelName +
                         API_KEY_EP + apiKey);
+    }
+
+    // Taken from https://www.codejava.net/java-se/file-io/how-to-read-and-write-text-file-in-java
+    public static String fileToStr(String fileName) {
+        try {
+            FileReader reader = new FileReader(fileName);
+            BufferedReader bufferedReader = new BufferedReader(reader);
+
+            String lineStr;
+            String fileStr = "";
+
+            while ((lineStr = bufferedReader.readLine()) != null) {
+                fileStr += lineStr;
+            }
+            reader.close();
+            return fileStr;
+
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     // Taken from Safwan Hijazi on stack overflow

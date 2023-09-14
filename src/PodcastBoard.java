@@ -15,10 +15,10 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class PodcastBoard {
     static String API_KEY_RELATIVE_PATH = "\\resources\\API_KEY.txt";
-    static String SRC_RELATIVE_PATH     = "\\src";
 
     //"DB" file Path
     final static String PODCASTS_FILE_PATH  = "\\resources\\PODCASTS.ser";
@@ -28,7 +28,7 @@ public class PodcastBoard {
     final static String SETTINGS_IMAGE_PATH = "resources/settings_icon.png";
 
     //Api key
-    final boolean USE_API_KEY = true;
+    final boolean USE_API_KEY = false;
 
     String apiKey = "";
 
@@ -70,13 +70,19 @@ public class PodcastBoard {
 
         if (USE_API_KEY) {
             this.apiKey = model.getApiKey(model.getDirPath(API_KEY_RELATIVE_PATH));
-            podcastThumbnails.add(model.createPodcastPanel(FFP, apiKey));
+
+            if (apiKey.isEmpty()) apiKey = ui.getApiKey();
+            else                  ui.setApiKey(apiKey);
+
+            model.updatePodcastInfo(FFP, apiKey);
+            podcastThumbnails.add(ui.createPodcastFront(FFP));
         }
 
         int paramAmount = model.mostParams(podcasts);
+        String[][] podcastsInfoLists = Podcast.getSeachDataAs2dArr(podcasts, paramAmount);
 
         JPanel podcastCard      = ui.createPodcastCard(toSettingsButton, podcastThumbnails);
-        JPanel podcastListPanel = ui.createPodcastListPanel(podcasts, paramAmount);
+        JPanel podcastListPanel = ui.createPodcastListPanel(podcastsInfoLists);
         JPanel settingsCard     = ui.createSettingsCard(toPodcastsButton, podcastListPanel);
 
         ui.createFrameWithCardLayout(1200, 800, frameIcon, podcastCard, settingsCard);

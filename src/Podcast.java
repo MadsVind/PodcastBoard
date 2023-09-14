@@ -17,15 +17,25 @@ public class Podcast {
     }
 
     public void addParam(String param) {
-        params.add(param);
+        this.params.add(param);
     }
 
     public void delParam(int paramIndex) {
-        params.remove(paramIndex);
+        this.params.remove(paramIndex);
     }
 
     public ArrayList<String> getParams() {
         return params;
+    }
+
+    public String getYoutubeFormatParams() {
+        String formatString = "";
+        for (int i = 0; i < params.size(); i++) {
+            if (i != 0) formatString += "|";
+            formatString += params.get(i);
+
+        }
+        return formatString;
     }
 
     public int getParamAmount() {

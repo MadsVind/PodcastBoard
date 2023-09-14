@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -11,8 +12,9 @@ public class UI {
     JFrame frame  = null;
 
     //Cards objects
-    CardLayout cl = null;
-    JPanel  cards = null;
+    CardLayout cl           = null;
+    JPanel  cards           = null;
+    JPasswordField apiInput = null;
 
     private static UI ui = null;
 
@@ -31,7 +33,6 @@ public class UI {
         frame = new JFrame("Podcast Board");
         frame.setSize(frameWidth, frameHeight);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         frame.setLayout(new BorderLayout());
 
         initCardLayout(cardList);
@@ -50,17 +51,33 @@ public class UI {
         int i = 1;
         for (JPanel card : panels) {
             cards.add(card, Integer.toString(i));
+            card.setBackground(Color.WHITE);
             i++;
         }
 
         cl.show(cards, "1");
     }
 
+    public JPanel createPodcastFront(Podcast podcast) {
+        JLabel thumbnail  = makeImgLabel(500, 300, podcast.getNewestPodcastThumbnail());
+        JLabel videoTitle = new JLabel(podcast.getNewestPodcastTitle());
+        videoTitle.setFont(new Font("Arial", Font.BOLD, 16));
+
+        JPanel podcastFront  = new JPanel();
+        podcastFront.setBackground(Color.WHITE);
+        podcastFront.setLayout(new BoxLayout(podcastFront, BoxLayout.Y_AXIS));
+        podcastFront.add(thumbnail);
+        podcastFront.add(videoTitle);
+        return podcastFront;
+    }
 
     public JPanel createPodcastCard(JButton settingsButton, ArrayList<JPanel> podcastPanels)  {
         JPanel podcastPanel  = new JPanel(new BorderLayout());
         JPanel podcastPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JPanel podcastPanelBot = new JPanel(new FlowLayout());
+
+        podcastPanelTop.setBackground(Color.ORANGE);
+        podcastPanelBot.setBackground(Color.WHITE);
 
         podcastPanel.add(podcastPanelTop, BorderLayout.NORTH);
         podcastPanel.add(podcastPanelBot, BorderLayout.CENTER);
@@ -74,62 +91,92 @@ public class UI {
     public JPanel createSettingsCard(JButton settingsButton, JPanel podcastPanel) {
         JPanel settingsPanel = new JPanel(new BorderLayout());
         JPanel settingsPanelTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JPanel settingsPanelBot = new JPanel(new FlowLayout());
+        JPanel settingsPanelBot = new JPanel();
+        settingsPanelBot.setLayout(new  BoxLayout(settingsPanelBot, BoxLayout.Y_AXIS));
+
+        settingsPanelTop.setBackground(Color.ORANGE);
+        settingsPanelBot.setBackground(Color.WHITE);
 
         settingsPanel.add(settingsPanelTop, BorderLayout.NORTH);
         settingsPanel.add(settingsPanelBot, BorderLayout.WEST);
 
         settingsPanelTop.add(settingsButton);
 
-        JPanel addPodcastPanel = podcastPanel;
 
-        settingsPanelBot.add(addPodcastPanel);
+        JPanel apiKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        apiKeyPanel.setBackground(Color.WHITE);
+
+        apiInput = new JPasswordField(18);
+        JLabel apikeyText       = new JLabel("Apikey: ");
+
+        apiKeyPanel.add(apikeyText);
+        apiKeyPanel.add(apiInput);
+
+        settingsPanelBot.add(apiKeyPanel);
+        settingsPanelBot.add(podcastPanel);
 
         return settingsPanel;
     }
 
-    public JPanel createPodcastListPanel(ArrayList<Podcast> podcasts, int paramAmount) {
-        JPanel addPodcastPanel = new JPanel();
-        JPanel addDelPanel     = new JPanel();
-        JPanel podcastsPanel   = new JPanel();
+    public String getApiKey() {
+        return apiInput.getPassword().toString();
+    }
 
-        addDelPanel.setBackground(Color.GRAY);
+    public void setApiKey(String apiKey) {
+        apiInput.setText(apiKey);
+    }
 
-        addPodcastPanel.add(addDelPanel);
-        addPodcastPanel.add(podcastsPanel);
+    public JPanel createPodcastListPanel(String[][] podcastsInfoLists) {
+        JPanel addPodcastPanel = new JPanel(new BorderLayout());
+        JPanel addDelPanel     = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel podcastsPanel   = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        JButton addPodcast = new JButton("+");
-        JButton delPodcast = new JButton("-");
+        addPodcastPanel.add(addDelPanel, BorderLayout.NORTH);
+        addPodcastPanel.add(podcastsPanel, BorderLayout.WEST);
 
-        addDelPanel.add(addPodcast);
-        addDelPanel.add(delPodcast);;
+        JButton addPodcastButton = new JButton("+");
+        JButton delPodcastButton = new JButton("-");
+
+        // get less assaulting colors
+        addPodcastButton.setBackground(Color.GREEN);
+        delPodcastButton.setBackground(Color.RED);
+
+        addPodcastButton.setPreferredSize(new Dimension(40, 40));
+        delPodcastButton.setPreferredSize(new Dimension(40, 40));
+
+        addPodcastButton.setFont(new Font("Arial", Font.BOLD, 10 ));
+        delPodcastButton.setFont(new Font("Arial", Font.BOLD, 10 ));
+
+        addDelPanel.add(addPodcastButton);
+        addDelPanel.add(delPodcastButton);;
 
         //Add table titles
+        int paramAmount = podcastsInfoLists[0].length-1;
+
         ArrayList<String> columnNames = new ArrayList<>();
         columnNames.add("Channel");
         for (int i = 1; i <= paramAmount; i++) {
             columnNames.add("param " + i);
         }
 
+        JTable podcastTable                = new JTable(podcastsInfoLists, columnNames.toArray());
+        podcastTable.setDefaultEditor(Object.class, null);
 
-        String[][] podcastsInfoLists = new String[podcasts.size()][paramAmount+1];
+        JScrollPane scrollPanePodcastTable = new JScrollPane(podcastTable);
+        podcastsPanel.add(scrollPanePodcastTable);
 
-        for (int i = 0; i < podcasts.size(); i++) {
-            for (int j = 0; j <= paramAmount; j++) {
-                Podcast podcast = podcasts.get(i);
+        podcastTable.setBackground(Color.WHITE);
+        scrollPanePodcastTable.setBackground(Color.WHITE);
+        scrollPanePodcastTable.getViewport().setBackground(Color.WHITE);
+        addDelPanel.setBackground(Color.WHITE);
+        addPodcastPanel.setBackground(Color.WHITE);
+        podcastsPanel.setBackground(Color.WHITE);
 
-                if (j == 0) {
-                    podcastsInfoLists[i][0] = podcast.getName();
-                }
-                else if (j <= podcast.getParamAmount()) {
-                    podcastsInfoLists[i][j] = podcast.getParams().get(j-1);
-                }
-                else podcastsInfoLists[i][j] = "";
-            }
-        }
+        podcastTable.setFont(new Font("Arial", Font.PLAIN, 11));
 
-        JTable table = new JTable(podcastsInfoLists, columnNames.toArray());
-        podcastsPanel.add(table);
+        podcastTable.getTableHeader().setBackground(Color.ORANGE);
+        podcastTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 20));
+        podcastTable.getTableHeader().setReorderingAllowed(false);
 
         return addPodcastPanel;
     }

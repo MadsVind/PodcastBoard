@@ -46,6 +46,8 @@ public class Model {
         return model;
     }
 
+
+
     public String getDirPath(String path) {
         return new File("").getAbsolutePath() + "\\src" + path;
     }
@@ -57,24 +59,16 @@ public class Model {
         return  apiKey;
     }
 
-    public JPanel createPodcastPanel(Podcast podcast, String apiKey) throws Exception {
+    public void updatePodcastInfo(Podcast podcast, String apiKey) throws Exception {
         String searchChannelJson = searchChannelJson(podcast.getName().replaceAll(" ", "%20"), apiKey);
-        println(searchChannelJson);
         String channelId         = jsonByHitIndex("channelId", 0, searchChannelJson);
         String formatedParams    = podcast.getYoutubeFormatParams().replaceAll(" ", "%20");
         String videoJson         = searchVideoJson(formatedParams, channelId, apiKey);
         String thumbnailUrl      = jsonByHitIndex("url", 2, videoJson);
 
         Image image = imgFromWebPath(thumbnailUrl);
-        JLabel thumbnail  = makeImgLabel(500, 300, image);
-        JLabel videoTitle = new JLabel(jsonByHitIndex("title", 0, videoJson));
-        videoTitle.setFont(new Font("Arial", Font.BOLD, 16));
-
-        JPanel podcastEp  = new JPanel();
-        podcastEp.setLayout(new BoxLayout(podcastEp, BoxLayout.Y_AXIS));
-        podcastEp.add(thumbnail);
-        podcastEp.add(videoTitle);
-        return podcastEp;
+        podcast.setNewestPodcastThumbnail(image);
+        podcast.setNewestPodcastTitle(jsonByHitIndex("title", 0, videoJson));
     }
 
 
@@ -84,11 +78,6 @@ public class Model {
         settingsButton.addActionListener(switchButtonListener);
     }
 
-    public JLabel makeImgLabel(int width, int height, Image img) {
-        JLabel label = new JLabel();
-        label.setIcon(new ImageIcon(img.getScaledInstance(width, height, Image.SCALE_DEFAULT)));
-        return label;
-    }
 
     public Image imgFromWebPath(String path) {
         try {

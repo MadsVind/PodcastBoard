@@ -1,12 +1,9 @@
 
 /* TODO
- * - Couple this shit together again
- * - figure out wtf to do with buttons
+ * - figure out wtf to do with buttons - PLS this is still a problem )':
  *
- * - Add functionality add, delete and edit channels
- * - Add a way to enter user api_key
+ * - Add functionality edit channels
  * - Add way to lock and or change window size
- * - Make gui with which the user, ME!, can use.
  * - format into MVC
  * - comment
  */
@@ -15,7 +12,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.Hashtable;
 
 public class PodcastBoard {
     static String API_KEY_RELATIVE_PATH = "\\resources\\API_KEY.txt";
@@ -24,16 +21,26 @@ public class PodcastBoard {
     final static String PODCASTS_FILE_PATH  = "\\resources\\PODCASTS.ser";
 
     //Image Relative paths
-    final static String ICON_PATH           = "resources/PodcastBoardIcon.png";
-    final static String SETTINGS_IMAGE_PATH = "resources/settings_icon.png";
+    final static String ICON_PATH           = "resources/images/PodcastBoardIcon.png";
+    final static String SETTINGS_IMAGE_PATH = "resources/images/settings_icon.png";
+    final static String ADD_IMAGE_PATH      = "resources/images/+Icon.png";
+    final static String DEL_IMAGE_PATH      = "resources/images/-Icon.png";
+    final static String EDIT_IMAGE_PATH     = "resources/images/editIcon.png";
+    final static String ACCEPT_IMAGE_PATH   = "resources/images/acceptIcon.png";
+
+    //Image hashmap
+    Hashtable<String, Image> imageHashtable = new Hashtable<>();
 
     //Api key
-    final boolean USE_API_KEY = false;
+    final boolean USE_API_KEY = true;
 
     String apiKey = "";
 
     Model model;
     UI ui;
+
+    //podcasts
+    private ArrayList<Podcast> podcasts;
 
     private static PodcastBoard pb = null;
 
@@ -54,40 +61,66 @@ public class PodcastBoard {
         model = Model.getInstance();
         ui    = UI.getInstance();
 
-        Image frameIcon    = model.imgFromRelPath(ICON_PATH);
-        Image settingImage = model.imgFromRelPath(SETTINGS_IMAGE_PATH);
-
-        JButton toSettingsButton = ui.createImageButton(settingImage, 40, 40);
-        JButton toPodcastsButton = ui.createImageButton(settingImage, 40, 40);
+        imageHashtable.put("frameIcon",    model.imgFromRelPath(ICON_PATH));
+        imageHashtable.put("settingImage", model.imgFromRelPath(SETTINGS_IMAGE_PATH));
+        imageHashtable.put("addImage",     model.imgFromRelPath(ADD_IMAGE_PATH));
+        imageHashtable.put("delImage",     model.imgFromRelPath(DEL_IMAGE_PATH));
+        imageHashtable.put("editImage",    model.imgFromRelPath(EDIT_IMAGE_PATH));
+        imageHashtable.put("acceptImage",  model.imgFromRelPath(ACCEPT_IMAGE_PATH));
 
         ArrayList<JPanel> podcastThumbnails = new ArrayList<>();
-        ArrayList<Podcast> podcasts         = new ArrayList<>();
+        podcasts                            = new ArrayList<>();
 
-        Podcast FFP = new Podcast("Forehead Fables Podcast");
-        FFP.addParam("Ep.");
-
-        podcasts.add(FFP);
-
-        if (USE_API_KEY) {
-            this.apiKey = model.getApiKey(model.getDirPath(API_KEY_RELATIVE_PATH));
-
-            if (apiKey.isEmpty()) apiKey = ui.getApiKey();
-            else                  ui.setApiKey(apiKey);
-
-            model.updatePodcastInfo(FFP, apiKey);
-            podcastThumbnails.add(ui.createPodcastFront(FFP));
+        if (model.fileExists(PODCASTS_FILE_PATH)) {
+            podcasts = model.readPodcastListFromFile(PODCASTS_FILE_PATH);
         }
 
-        int paramAmount = model.mostParams(podcasts);
+        getUpdatedThumbnails();
+
+        int paramAmount = ui.mostParams(podcasts);
         String[][] podcastsInfoLists = Podcast.getSeachDataAs2dArr(podcasts, paramAmount);
 
-        JPanel podcastCard      = ui.createPodcastCard(toSettingsButton, podcastThumbnails);
+
         JPanel podcastListPanel = ui.createPodcastListPanel(podcastsInfoLists);
-        JPanel settingsCard     = ui.createSettingsCard(toPodcastsButton, podcastListPanel);
+        JPanel podcastCard      = ui.createPodcastCard(imageHashtable.get("settingImage"), podcastThumbnails);
+        JPanel settingsCard     = ui.createSettingsCard(imageHashtable.get("settingImage"), podcastListPanel);
 
-        ui.createFrameWithCardLayout(1200, 800, frameIcon, podcastCard, settingsCard);
 
-        model.setSettingsButtonBehaivior(toSettingsButton, ui.cl, ui.cards);
-        model.setSettingsButtonBehaivior(toPodcastsButton, ui.cl, ui.cards);
+        ui.createFrameWithCardLayout("PodcastBoard",1200, 800, imageHashtable.get("frameIcon"), podcastCard, settingsCard);
+
+        model.setSettingsButtonBehaivior(ui.getButtonByName("settingsButton"), ui.cl, ui.cards);
+        model.setSettingsButtonBehaivior(ui.getButtonByName("podcastsButton"), ui.cl, ui.cards);
+    }
+
+    public ArrayList<Podcast> getPodcasts() {
+        return podcasts;
+    }
+
+    public Image getImage(String imageName) {
+        return imageHashtable.get(imageName);
+    }
+
+    public Image urlToImage(String url) {
+        return model.imgFromWebPath(url);
+    }
+
+    public void updatePodcastsFile() throws Exception {
+        System.out.println("write podcast to file");
+        model.writePodcastListToFile(podcasts, PODCASTS_FILE_PATH);
+    }
+
+    public ArrayList<JPanel> getUpdatedThumbnails() {
+        if (USE_API_KEY) {
+            this.apiKey = model.getApiKey(model.getDirPath(API_KEY_RELATIVE_PATH));
+            if (!ui.getApiKey().isEmpty() && apiKey.isEmpty()) {
+                apiKey = ui.getApiKey();
+                model.strToFile(model.getDirPath(API_KEY_RELATIVE_PATH), apiKey);
+            }
+            else ui.setApiKey(apiKey);
+            model.updatePodcasts(podcasts, apiKey);
+            return ui.PodcastToThumbnails(podcasts);
+        }
+        else System.out.println("Api usage turned off");
+        return null;
     }
 }

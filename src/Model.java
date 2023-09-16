@@ -30,10 +30,6 @@ public class Model {
     final static String SEARCH_PARAM_EP      = "&q=";
     final static String API_KEY_EP           = "&key=";
 
-    //Paths
-    static String DIR_PATH                  = "";
-    final static String PODCASTS_FILE_PATH  = "\\resources\\PODCASTS.ser";
-
     static HttpClient httpClient = HttpClient.newHttpClient();
 
     private static Model model = null;
@@ -46,31 +42,37 @@ public class Model {
         return model;
     }
 
-
-
     public String getDirPath(String path) {
         return new File("").getAbsolutePath() + "\\src" + path;
     }
 
     public String getApiKey(String apiKeyPath) {
-
         String apiKey = fileToStr(apiKeyPath);
-        if (apiKey == null) println("api key didn't exist");
+        if (apiKey == null) System.out.println("api key didn't exist");
         return  apiKey;
     }
 
-    public void updatePodcastInfo(Podcast podcast, String apiKey) throws Exception {
-        String searchChannelJson = searchChannelJson(podcast.getName().replaceAll(" ", "%20"), apiKey);
-        String channelId         = jsonByHitIndex("channelId", 0, searchChannelJson);
-        String formatedParams    = podcast.getYoutubeFormatParams().replaceAll(" ", "%20");
-        String videoJson         = searchVideoJson(formatedParams, channelId, apiKey);
-        String thumbnailUrl      = jsonByHitIndex("url", 2, videoJson);
+    public void updatePodcastInfo(Podcast podcast, String apiKey) {
+        try {
+            String searchChannelJson = searchChannelJson(podcast.getName().replaceAll(" ", "%20"), apiKey);
+            String channelId         = jsonByHitIndex("channelId", 0, searchChannelJson);
+            String formatedParams    = podcast.getYoutubeFormatParams().replaceAll(" ", "%20");
+            String videoJson         = searchVideoJson(formatedParams, channelId, apiKey);
+            String thumbnailUrl      = jsonByHitIndex("url", 2, videoJson);
 
-        Image image = imgFromWebPath(thumbnailUrl);
-        podcast.setNewestPodcastThumbnail(image);
-        podcast.setNewestPodcastTitle(jsonByHitIndex("title", 0, videoJson));
+            podcast.setNewestPodcastThumbnailUrl(thumbnailUrl);
+            podcast.setNewestPodcastTitle(jsonByHitIndex("title", 0, videoJson));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    public void updatePodcasts(ArrayList<Podcast> podcasts, String apiKey) {
+        podcasts.forEach(podcast -> {
+            try                 {updatePodcastInfo(podcast, apiKey);}
+            catch (Exception e) {throw new RuntimeException(e);}
+        });
+    }
 
     // this needs to be generalized
     public void setSettingsButtonBehaivior(JButton settingsButton, CardLayout cl, JPanel cards) {
@@ -93,43 +95,36 @@ public class Model {
         return Toolkit.getDefaultToolkit().getImage(url);
     }
 
-    public int mostParams(ArrayList<Podcast> podcasts) {
-        int mostParams = 0;
-        for (Podcast podcast : podcasts) {
-            int tempAmount = podcast.getParamAmount();
-            if (tempAmount > mostParams) mostParams = tempAmount;
-        }
-        return mostParams;
-    }
-
     public boolean fileExists(String fileRelativePath) {
-        String filePath = DIR_PATH + "\\" + fileRelativePath;
+        String filePath = getDirPath(fileRelativePath);
         File file = new File(filePath);
         return file.exists();
     }
 
     public void writePodcastListToFile(ArrayList<Podcast> obj, String fileRelativePath) throws Exception {
-        String filePath = DIR_PATH + "\\" + fileRelativePath;
+        String filePath = getDirPath(fileRelativePath);
         File file = new File(filePath);
         if (file.exists()) file.delete();
         try  {
-            FileOutputStream fileoutputStream = new FileOutputStream(DIR_PATH + "\\" + fileRelativePath);
+            FileOutputStream fileoutputStream = new FileOutputStream(filePath);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileoutputStream);
             objectOutputStream.writeObject(obj);
 
-            println("");
+            objectOutputStream.close();
+            fileoutputStream.close();
+
         } catch (Exception e) {
             throw new Exception(e);
         }
     }
 
-    public ArrayList<Podcast> readPodcastListFromFile(String fileName) throws Exception {
+    public ArrayList<Podcast> readPodcastListFromFile(String fileRelativePath) throws Exception {
         try {
-            FileInputStream fileInputStream = new FileInputStream(fileName);
+            String filePath = getDirPath(fileRelativePath);
+            FileInputStream fileInputStream = new FileInputStream(filePath);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
-            ArrayList<Podcast> podcastList = (ArrayList<Podcast>) objectInputStream.readObject();
-
+            ArrayList<Podcast> podcastList =  (ArrayList<Podcast>) objectInputStream.readObject();
             fileInputStream.close();
             objectInputStream.close();
 
@@ -143,6 +138,7 @@ public class Model {
         java.util.List<String> list = new ArrayList<>();
         JsonParser jsonParser = new JsonParser();
         check(key, jsonParser.parse(json), list);
+        if (list.isEmpty()) return "";
         return list.get(index).replaceAll("\"", "");
     }
 
@@ -156,6 +152,10 @@ public class Model {
     }
 
     public String searchVideoJson(String searchParam, String channelId, String apiKey) throws Exception {
+        if (searchParam.isEmpty() || channelId.isEmpty() || apiKey.isEmpty()) {
+            System.err.println("ERR: searchParams, Channelid or apikeywas empty, in video search");
+            return "";
+        }
         String maxResults = "1";
         String order = "date";
         return getRequestJson(BY_CHANNEL_SEARCH_EP + channelId +
@@ -167,6 +167,10 @@ public class Model {
     }
 
     public String searchChannelJson(String channelName, String apiKey) throws Exception {
+        if (channelName.isEmpty() || apiKey.isEmpty()) {
+            System.err.println("ERR: Channel name or apikey was empty, in channel search");
+            return "";
+        }
         String maxResults = "1";
         return getRequestJson(CHANNEL_SEARCH_EP +
                 MAX_RESULTS_EP + maxResults +
@@ -181,16 +185,27 @@ public class Model {
             BufferedReader bufferedReader = new BufferedReader(reader);
 
             String lineStr;
-            String fileStr = "";
+            StringBuilder fileStr = new StringBuilder();
 
             while ((lineStr = bufferedReader.readLine()) != null) {
-                fileStr += lineStr;
+                fileStr.append(lineStr);
             }
             reader.close();
-            return fileStr;
+            return fileStr.toString();
 
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    public void strToFile(String path, String str) {
+        try {
+            FileWriter writer = new FileWriter(path);
+            writer.write(str);
+            writer.close();
+
+        } catch (IOException e) {
+            throw  new RuntimeException();
         }
     }
 
@@ -219,13 +234,5 @@ public class Model {
                 }
             }
         }
-    }
-
-    public static void println(Object e) {
-        System.out.println(e.toString());
-    }
-
-    public static void print(Object e) {
-        System.out.print(e.toString());
     }
 }

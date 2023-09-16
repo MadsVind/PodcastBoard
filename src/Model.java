@@ -55,6 +55,8 @@ public class Model {
     public void updatePodcastInfo(Podcast podcast, String apiKey) {
         try {
             String searchChannelJson = searchChannelJson(podcast.getName().replaceAll(" ", "%20"), apiKey);
+            if (jsonByHitIndex("code", 0, searchChannelJson).equals("403"))
+                System.err.println("ERR: The request cannot be completed because you have exceeded your apikey quota");
             String channelId         = jsonByHitIndex("channelId", 0, searchChannelJson);
             String formatedParams    = podcast.getYoutubeFormatParams().replaceAll(" ", "%20");
             String videoJson         = searchVideoJson(formatedParams, channelId, apiKey);

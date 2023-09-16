@@ -1,14 +1,20 @@
 import java.awt.*;
+import java.io.Serial;
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class Podcast {
+public class Podcast implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -8256478671811426015L;
+
     //Search data
     private String name;
     private ArrayList<String> params = new ArrayList<>();
 
     //Result data
-    private Image  newestPodcastThumbnail  = null;
-    private String newestPodcastTitle      = null;
+    private String newestPodcastThumbnailUrl  = null;
+    private String newestPodcastTitle          = null;
 
     public Podcast(String name) {
         this.name = name;
@@ -41,6 +47,9 @@ public class Podcast {
         this.name = name;
     }
 
+    public void setParams(ArrayList<String> params) {
+        this.params = params;
+    }
     public void addParam(String param) {
         this.params.add(param);
     }
@@ -57,7 +66,7 @@ public class Podcast {
         String formatString = "";
         for (int i = 0; i < params.size(); i++) {
             if (i != 0) formatString += "|";
-            formatString += params.get(i);
+            formatString += params.get(i).replaceAll(" ", "%20");
 
         }
         return formatString;
@@ -75,11 +84,11 @@ public class Podcast {
         this.newestPodcastTitle = newestPodcastTitle;
     }
 
-    public Image getNewestPodcastThumbnail() {
-        return newestPodcastThumbnail;
+    public String getNewestPodcastThumbnailUrl() {
+        return newestPodcastThumbnailUrl;
     }
 
-    public void setNewestPodcastThumbnail(Image newestPodcastThumbnail) {
-        this.newestPodcastThumbnail = newestPodcastThumbnail;
+    public void setNewestPodcastThumbnailUrl(String newestPodcastThumbnailUrl) {
+        this.newestPodcastThumbnailUrl = newestPodcastThumbnailUrl;
     }
 }

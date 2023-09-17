@@ -1,0 +1,11 @@
+Index: src/resources/API_KEY.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/resources/API_KEY.txt b/src/resources/API_KEY.txt
+--- a/src/resources/API_KEY.txt	(revision 11302443ea8861767df1ad0de12342eb31bc949f)
++++ b/src/resources/API_KEY.txt	(date 1694509614841)
+@@ -1,0 +1,1 @@
++AIzaSyDVR334EwMxaIwVkuglRU-qbQ2DouCsQHc
+\ No newline at end of file

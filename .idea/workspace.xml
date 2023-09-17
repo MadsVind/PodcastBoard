@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7dcf3d6b-1b1a-4bc1-8c00-b3af1c4c662a" name="Changes" comment="Initial MVC reformatting while in progress" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+  }
+}</component>
+  <component name="GithubProjectSettings">
+    <option name="branchProtectionPatterns">
+      <list>
+        <option value="main" />
+      </list>
+    </option>
+  </component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="564bb1ff-ce49-4a2a-927b-e6f969fc7d3b" />
+        <option name="url" value="https://github.com/MadsVind/PodcastBoard.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2V7H6zsJUh5ojaDEZypieVe7a4E" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "MVCrefactor",
+    "last_opened_file_path": "C:/Users/madsv_2dffgyy/IdeaProjects/PodcastBoard/src/resources",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "C:/Users/madsv_2dffgyy/IdeaProjects/PodcastBoard/src/Main.java",
+    "project.structure.last.edited": "Libraries",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "Errors",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\madsv_2dffgyy\IdeaProjects\PodcastBoard\src\resources" />
+      <recent name="C:\Users\madsv_2dffgyy\IdeaProjects\PodcastBoard\src\resources\images" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\madsv_2dffgyy\IdeaProjects\PodcastBoard\src\resources\images" />
+      <recent name="C:\Users\madsv_2dffgyy\IdeaProjects\PodcastBoard\src\resources" />
+      <recent name="C:\Users\madsv_2dffgyy\IdeaProjects\PodcastBoard\.idea\libraries\jar_files" />
+      <recent name="C:\Users\madsv_2dffgyy\IdeaProjects\PodcastBoard\.idea\libraries\JAR_FILES" />
+      <recent name="C:\Users\madsv_2dffgyy\IdeaProjects\PodcastBoard\src" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="PodcastBoard" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="PodcastBoard" />
+      <module name="PodcastBoard" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7dcf3d6b-1b1a-4bc1-8c00-b3af1c4c662a" name="Changes" comment="" />
+      <created>1694180026827</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1694180026827</updated>
+      <workItem from="1694180027797" duration="9727000" />
+      <workItem from="1694254427049" duration="22665000" />
+      <workItem from="1694333581795" duration="30700000" />
+      <workItem from="1694501744056" duration="24353000" />
+      <workItem from="1694708603653" duration="11359000" />
+      <workItem from="1694791134182" duration="9948000" />
+      <workItem from="1694848372034" duration="43426000" />
+      <workItem from="1694945289145" duration="8206000" />
+    </task>
+    <task id="LOCAL-00001" summary="First commit">
+      <option name="closed" value="true" />
+      <created>1694358135759</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1694358135760</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Tab change by setting button">
+      <option name="closed" value="true" />
+      <created>1694370781495</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1694370781495</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Tab change by setting button">
+      <option name="closed" value="true" />
+      <created>1694370811145</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1694370811145</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Tab change by setting button">
+      <option name="closed" value="true" />
+      <created>1694370905635</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1694370905635</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Got a table with a podcast in settings">
+      <option name="closed" value="true" />
+      <created>1694547767622</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1694547767622</updated>
+    </task>
+    <task id="LOCAL-00006" summary="MVC is more apropriatly done and more design">
+      <option name="closed" value="true" />
+      <created>1694720500544</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1694720500544</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Now Saves podcasts, added functionality for addding and del podcasts, saves apikey and gets from password, probably some more idk">
+      <option name="closed" value="true" />
+      <created>1694898143305</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1694898143305</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Made check for exhausted api usage">
+      <option name="closed" value="true" />
+      <created>1694898992711</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1694898992711</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Initial MVC reformatting while in progress">
+      <option name="closed" value="true" />
+      <created>1694954042991</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1694954042991</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="First commit" />
+    <MESSAGE value="Tab change by setting button" />
+    <MESSAGE value="Got a table with a podcast in settings" />
+    <MESSAGE value="MVC is more apropriatly done and more design" />
+    <MESSAGE value="Now Saves podcasts, added functionality for addding and del podcasts, saves apikey and gets from password, probably some more idk" />
+    <MESSAGE value="Made check for exhausted api usage" />
+    <MESSAGE value="Initial MVC reformatting while in progress" />
+    <option name="LAST_COMMIT_MESSAGE" value="Initial MVC reformatting while in progress" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.Exception" package="java.lang" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/PodcastBoard$Game.ic" NAME="Game Coverage Results" MODIFIED="1694180448959" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+</project>

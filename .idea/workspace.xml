@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7dcf3d6b-1b1a-4bc1-8c00-b3af1c4c662a" name="Changes" comment="Initial MVC reformatting while in progress" />
+    <list default="true" id="7dcf3d6b-1b1a-4bc1-8c00-b3af1c4c662a" name="Changes" comment="Initial MVC reformatting while in progress">
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12-09-2023_08_57__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12-09-2023_08_57__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_rebase__Changes_1.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/PodcastBoard/Model.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PodcastBoard/Model.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/PodcastBoard/PodcastBoard.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/PodcastBoard/PodcastBoard.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/PodcastBoard.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/PodcastBoard.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/resources/PODCASTS.ser" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/PODCASTS.ser" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,7 +41,7 @@
   <component name="GithubProjectSettings">
     <option name="branchProtectionPatterns">
       <list>
-        <option value="main" />
+        <option value="master" />
       </list>
     </option>
   </component>
@@ -63,7 +72,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "MVCrefactor",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "C:/Users/madsv_2dffgyy/IdeaProjects/PodcastBoard/src/resources",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -189,7 +198,23 @@
       <option name="project" value="LOCAL" />
       <updated>1694954042991</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Test of push">
+      <option name="closed" value="true" />
+      <created>1694957569465</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1694957569465</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Test of push 2">
+      <option name="closed" value="true" />
+      <created>1694957675805</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1694957675805</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -214,7 +239,9 @@
     <MESSAGE value="Now Saves podcasts, added functionality for addding and del podcasts, saves apikey and gets from password, probably some more idk" />
     <MESSAGE value="Made check for exhausted api usage" />
     <MESSAGE value="Initial MVC reformatting while in progress" />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial MVC reformatting while in progress" />
+    <MESSAGE value="Test of push" />
+    <MESSAGE value="Test of push 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="Test of push 2" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

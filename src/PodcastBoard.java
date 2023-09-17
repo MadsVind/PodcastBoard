@@ -90,6 +90,10 @@ public class PodcastBoard {
 
         model.setSettingsButtonBehaivior(ui.getButtonByName("settingsButton"), ui.cl, ui.cards);
         model.setSettingsButtonBehaivior(ui.getButtonByName("podcastsButton"), ui.cl, ui.cards);
+        ui.updatePodcastPanel(getUpdatedThumbnails());
+        podcastCard.revalidate();
+        podcastCard.repaint();
+
     }
 
     public ArrayList<Podcast> getPodcasts() {

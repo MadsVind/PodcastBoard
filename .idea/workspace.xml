@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7dcf3d6b-1b1a-4bc1-8c00-b3af1c4c662a" name="Changes" comment="The program is now functional and converted to MVC- &#10;&#10;Except som util functions which should be classes&#10;&#10;There has also been added some err catches">
+    <list default="true" id="7dcf3d6b-1b1a-4bc1-8c00-b3af1c4c662a" name="Changes" comment="Old code before reformatting">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/resources/API_KEY.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/resources/API_KEY.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -207,7 +208,15 @@
       <option name="project" value="LOCAL" />
       <updated>1694957675805</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Old code before reformatting">
+      <option name="closed" value="true" />
+      <created>1694979831939</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1694979831939</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -235,7 +244,8 @@
     <MESSAGE value="Test of push" />
     <MESSAGE value="Test of push 2" />
     <MESSAGE value="The program is now functional and converted to MVC- &#10;&#10;Except som util functions which should be classes&#10;&#10;There has also been added some err catches" />
-    <option name="LAST_COMMIT_MESSAGE" value="The program is now functional and converted to MVC- &#10;&#10;Except som util functions which should be classes&#10;&#10;There has also been added some err catches" />
+    <MESSAGE value="Old code before reformatting" />
+    <option name="LAST_COMMIT_MESSAGE" value="Old code before reformatting" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

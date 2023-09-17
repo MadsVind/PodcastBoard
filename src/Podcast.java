@@ -21,6 +21,7 @@ public class Podcast implements Serializable {
     }
 
     public static String[][] getSeachDataAs2dArr(ArrayList<Podcast> podcasts, int paramAmount) {
+        if (podcasts.isEmpty()) return new String[][]{};
         String[][] podcastsSearchData2dArr = new String[podcasts.size()][paramAmount+1];
 
         for (int i = 0; i < podcasts.size(); i++) {

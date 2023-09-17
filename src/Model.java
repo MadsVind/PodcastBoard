@@ -2,9 +2,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -38,7 +36,8 @@ public class Model {
     private String apiKey = "";
 
     //Podcasts
-    ArrayList<Podcast> podcasts;
+    private ArrayList<Podcast> podcasts = new ArrayList<>();
+    private int maxPodcastParams;
 
     private static Model model = null;
 
@@ -54,21 +53,61 @@ public class Model {
         return new File("").getAbsolutePath() + "\\src" + path;
     }
 
-    public void initApiKeyFromFile() {
+    public String initApiKeyFromFile() {
         apiKey = fileToStr(getDirPath(API_KEY_RELATIVE_PATH));
-        if (apiKey == null) System.out.println("api key didn't exist");
+        if (apiKey == null) {
+            System.out.println("api key didn't exist");
+            return null;
+        }
+        return apiKey;
     }
 
     public void setApiKey(String apiKeyUI) {
+        if (this.apiKey.equals(apiKeyUI)) return;
         this.apiKey = apiKeyUI;
+        strToFile(getDirPath(API_KEY_RELATIVE_PATH), apiKeyUI);
+    }
+
+    public ArrayList<String> getPodcastTitles() {
+        ArrayList<String> titles = new ArrayList<>();
+        podcasts.forEach(podcast -> titles.add(podcast.getNewestPodcastTitle()));
+        return titles;
+    }
+
+    public ArrayList<Image> getPodcastThumbnails() {
+        ArrayList<Image> thumbnails = new ArrayList<>();
+        podcasts.forEach(podcast -> thumbnails.add(imgFromWebPath(podcast.getNewestPodcastThumbnailUrl())));
+        return thumbnails;
     }
 
     public ArrayList<Podcast> getPodcasts() {
         return podcasts;
     }
 
+    public void addPodcast(Podcast podcast) {
+        podcasts.add(podcast);
+    }
+
+    public void removePodcast(int index) {
+        podcasts.remove(index);
+    }
+
+    private void mostParams() {
+        int params = 0;
+        for (Podcast podcast : podcasts) {
+            int tempAmount = podcast.getParamAmount();
+            if (tempAmount > params) params = tempAmount;
+        }
+        maxPodcastParams = params;
+    }
+
+    public int getMaxPodcastParams() {
+        return maxPodcastParams;
+    }
+
     public void updatePodcastInfo(Podcast podcast) {
         try {
+            System.out.println("updatePodcastInfo");
             String searchChannelJson = searchChannelJson(podcast.getName().replaceAll(" ", "%20"), apiKey);
             if (jsonByHitIndex("code", 0, searchChannelJson).equals("403"))
                 System.err.println("ERR: The request cannot be completed because you have exceeded your apikey quota");
@@ -86,9 +125,11 @@ public class Model {
 
     public void updatePodcasts() {
         podcasts.forEach(podcast -> {
-            try   {updatePodcastInfo(podcast);}
-            catch (Exception e) {throw new RuntimeException(e);}
+            updatePodcastInfo(podcast);
+            mostParams();
+
         });
+        writePodcastListToFile();
     }
 
     // this needs to be generalized
@@ -107,46 +148,50 @@ public class Model {
         return Toolkit.getDefaultToolkit().getImage(url);
     }
 
-    public boolean fileExists(String fileRelativePath) {
-        String filePath = getDirPath(fileRelativePath);
+    private boolean fileExists(String filePath) {
         File file = new File(filePath);
         return file.exists();
     }
 
-    public void writePodcastListToFile(ArrayList<Podcast> obj, String fileRelativePath) throws Exception {
-        String filePath = getDirPath(fileRelativePath);
+    private void writePodcastListToFile() {
+        String filePath = getDirPath(PODCASTS_FILE_PATH);
         File file = new File(filePath);
         if (file.exists()) file.delete();
         try  {
             FileOutputStream fileoutputStream = new FileOutputStream(filePath);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileoutputStream);
-            objectOutputStream.writeObject(obj);
+            objectOutputStream.writeObject(podcasts);
 
             objectOutputStream.close();
             fileoutputStream.close();
 
+            podcasts.forEach(podcast -> System.out.println("To file: " + podcast.getName()));
+
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new RuntimeException(e);
         }
     }
 
-    public ArrayList<Podcast> readPodcastListFromFile(String fileRelativePath) throws Exception {
+    public void getPodcastListFromFile() {
         try {
-            String filePath = getDirPath(fileRelativePath);
+            String filePath = getDirPath(PODCASTS_FILE_PATH);
+            if (!fileExists(filePath)) {
+                System.err.println("ERR: There was no file containing the podcast objects");
+                return;
+            }
             FileInputStream fileInputStream = new FileInputStream(filePath);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
-            ArrayList<Podcast> podcastList =  (ArrayList<Podcast>) objectInputStream.readObject();
+            podcasts = (ArrayList<Podcast>) objectInputStream.readObject();
+            podcasts.forEach(podcast -> System.out.println("From file: " + podcast.getName()));
             fileInputStream.close();
             objectInputStream.close();
-
-            return podcastList;
         } catch (Exception e) {
-            throw new Exception(e);
+            throw new RuntimeException(e);
         }
     }
 
-    public String jsonByHitIndex(String key, int index, String json) {
+    private String jsonByHitIndex(String key, int index, String json) {
         java.util.List<String> list = new ArrayList<>();
         JsonParser jsonParser = new JsonParser();
         check(key, jsonParser.parse(json), list);
@@ -154,7 +199,7 @@ public class Model {
         return list.get(index).replaceAll("\"", "");
     }
 
-    public String getRequestJson(String uriStr) throws Exception {
+    private String getRequestJson(String uriStr) throws Exception {
         HttpRequest getRequest = HttpRequest.newBuilder()
                 .uri(new URI( uriStr))
                 .build();
@@ -163,7 +208,7 @@ public class Model {
         return getResponse.body();
     }
 
-    public String searchVideoJson(String searchParam, String channelId, String apiKey) throws Exception {
+    private String searchVideoJson(String searchParam, String channelId, String apiKey) throws Exception {
         if (searchParam.isEmpty() || channelId.isEmpty() || apiKey.isEmpty()) {
             System.err.println("ERR: searchParams, Channelid or apikeywas empty, in video search");
             return "";
@@ -178,7 +223,7 @@ public class Model {
                 API_KEY_EP + apiKey);
     }
 
-    public String searchChannelJson(String channelName, String apiKey) throws Exception {
+    private String searchChannelJson(String channelName, String apiKey) throws Exception {
         if (channelName.isEmpty() || apiKey.isEmpty()) {
             System.err.println("ERR: Channel name or apikey was empty, in channel search");
             return "";
@@ -191,7 +236,7 @@ public class Model {
     }
 
     // Taken from https://www.codejava.net/java-se/file-io/how-to-read-and-write-text-file-in-java
-    public String fileToStr(String fileName) {
+    private String fileToStr(String fileName) {
         try {
             FileReader reader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(reader);

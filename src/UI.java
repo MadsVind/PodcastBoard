@@ -6,313 +6,118 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class UI extends JFrame {
-
+    //Fonts
+    final Font smallFont = new Font("Arial", Font.BOLD, 10 );
+    final Font mediumFont = new Font("Arial", Font.BOLD, 16 );
 
     //Frame settings
-    int frameWidth;
-    int frameHeight;
-    JFrame frame  = null;
+    private int frameWidth;
+    private int frameHeight;
+    private final JFrame frame = new JFrame("PodcastBoard");
 
     //Cards objects
-    CardLayout cl           = null;
-    JPanel  cards           = null;
+    private CardLayout cl = null;
+    private JPanel  cards = null;
 
-    //Dialogs
+    //PodcastCard
+    private final JPanel podcastCard         = new JPanel(new BorderLayout());
+    private final JPanel settingsButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    private final JPanel podcastPanel        = new JPanel(new FlowLayout());
+
+    // Podcast Thumbnail
+    private final ArrayList<JPanel> podcastThumbnailPanels = new ArrayList<>();
+
+    private final int thumbnailWidth  = 500;
+    private final int thumbnailHeigth = 300;
+
+    //SettingsCard
+    private final JPanel settingsCard     = createColorPanel(new BorderLayout(), Color.WHITE);
+    private final JPanel settingsPanelTop = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.ORANGE);
+    private final JPanel settingsPanelBot = new JPanel();
+
+    private final JPanel apiKeyPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
+    private final JLabel apikeyText  = new JLabel("Apikey: ");
+
+    private JButton podcastsButton;
+
+    //Podcast table panel
+    private final JPanel addPodcastPanel    = createColorPanel(new BorderLayout(), Color.WHITE);
+    private final JPanel addDelPanel        = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.NORTH);
+    private final JPanel tablePodcastsPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.WEST);
+
+    private JButton addPodcastButton;
+    private JButton delPodcastButton;
+
+    private JButton settingsButton;
+
+    //Podcast add dialog
     private CustomDialog addDialog = null;
+
+    private final JPanel addDialogPanel    = createColorPanel(new BorderLayout(), Color.WHITE);
+    private final JPanel channelNamePanel  = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.NORTH);
+    private final JPanel addDelParamsPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.WEST);
+    private final JPanel paramsPanel       = new JPanel();
+    private final JPanel acceptPanel       = createColorPanel(new FlowLayout(FlowLayout.CENTER), Color.WHITE, addDialogPanel, BorderLayout.SOUTH);
+
+    private final JLabel channelNameLabel = createLabel("Podcast channel name:", smallFont, channelNamePanel);
+    private final JTextField channelNameInput  = createTextField("Insert channel name", smallFont, channelNamePanel);
+
+    private JButton addParamButton;
+    private JButton delParamButton;
+    private JButton acceptButton;
+
+    private final ArrayList<JTextField> paramTextFields = new ArrayList<>();
+
 
     //Api key
     JPasswordField apiInput = new JPasswordField(18);
 
-    //Podcast Swing
-    private JPanel            podcastPanel;
+    //Podcast table
     private DefaultTableModel podcastModel;
     private JTable            podcastTable;
 
-    //Font
-    final Font smallFont = new Font("Arial", Font.BOLD, 10 );
-    final Font mediumFont = new Font("Arial", Font.BOLD, 16 );
+    //Images //this could be done with an action listner
 
-    private final Hashtable<String, JButton> buttonHashtable = new Hashtable<>();
+    private final Image settingImage;
+    private final Image addImage;
+    private final Image delImage;
+    private final Image editImage;
+    private final Image acceptImage;
 
-    public JButton getButtonByName(String name) {
-        return  buttonHashtable.get(name);
+    private String[][] podcastsTableData = null;
+
+    public UI(int frameHeight, int frameWidth,
+              Image frameIcon, Image settingImage, Image addImage, Image delImage, Image editImage, Image acceptImage) {
+        this.frameHeight = frameHeight;
+        this.frameWidth  = frameWidth;
+
+        this.settingImage = settingImage;
+        this.addImage     = addImage;
+        this.delImage     = delImage;
+        this.editImage    = editImage;
+        this.acceptImage  = acceptImage;
+
+        this.setSize(frameWidth, frameHeight);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setLayout(new BorderLayout());
+
+        initAddDialog();
+
+        initPodcastCard();
+        initSettingsCard();
+
+        initPodcastListPanel();
+
+        initCardLayout(podcastCard, settingsCard );
+
+        this.add(cards);
+
+        this.setIconImage(frameIcon);
     }
 
-    private static UI ui = null;
-
-    public static synchronized UI getInstance()
-    {
-        if (ui == null)
-            ui = new UI();
-
-        return ui;
-    }
-
-    UI() {
-        frame = new JFrame("");
-        frame.setSize(frameWidth, frameHeight);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-
-        initCardLayout(cardList);
-        frame.add(cards);
-
-        frame.setIconImage(frameIcon);
-        frame.setVisible(true);
-    }
-
-
-    public void packCustDialog(CustomDialog dialog) {
-        dialog.pack();
-    }
-
-    public void addPodcast(ArrayList<Podcast> podcasts) {
-        Image acceptImage = pb.getImage("acceptImage");
-        JButton acceptButton = createImageButton("acceptPodcastButton", acceptImage, 40, 40);
-        JPanel dialogPanel = createDialogPanel(podcasts, acceptButton);
-
-        addDialog = new CustomDialog(frame, "Add podcast", dialogPanel, acceptButton);
-        addDialog.setVisible(true);
-    }
-
-    public void delPodcast(ArrayList<Podcast> podcasts) {
-        int selectedRow = podcastTable.getSelectedRow();
-        if(selectedRow  != -1) {
-            podcastModel.removeRow(selectedRow);
-            podcasts.remove(selectedRow);
-
-            int paramAmount = mostParams(podcasts);
-            String[][] podcastsInfoLists = Podcast.getSeachDataAs2dArr(podcasts, paramAmount);
-
-            try {
-                pb.updatePodcastsFile();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            updatePodcastTable(podcastsInfoLists);
-        }
-    }
-
-
-    private JPanel createDialogPanel(ArrayList<Podcast> podcasts, JButton acceptButton) {
-        JPanel addDialogPanel    = createColorPanel(new BorderLayout(), Color.WHITE);
-        JPanel channelNamePanel  = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.NORTH);
-        JPanel addDelParamsPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.WEST);
-
-        JPanel paramsPanel = new JPanel();
-        paramsPanel.setLayout(new BoxLayout(paramsPanel, BoxLayout.Y_AXIS));
-        paramsPanel.setBackground(Color.WHITE);
-        addDialogPanel.add(paramsPanel);
-
-        JPanel acceptPanel = createColorPanel(new FlowLayout(FlowLayout.CENTER), Color.WHITE, addDialogPanel, BorderLayout.SOUTH);
-
-        createLabel("Podcast channel name:", smallFont, channelNamePanel);
-        JTextField channelNameInput = createTextField("Insert channel name", smallFont, channelNamePanel);
-
-        Image addImage = pb.getImage("addImage");
-        Image delImage = pb.getImage("delImage");
-        JButton addPodcastButton = createImageButton("addParamButton", addImage, 40, 40);
-        JButton delPodcastButton = createImageButton("delParamButton", delImage, 40, 40);
-
-        ArrayList<JTextField> paramTextFields = new ArrayList<>();
-
-        addDelParamsPanel.add(addPodcastButton);
-        addDelParamsPanel.add(delPodcastButton);
-        acceptPanel.add(acceptButton);
-
-        addPodcastButton.addActionListener(e -> {
-            paramTextFields.add(createParamPanel(paramsPanel));
-            packCustDialog(addDialog);
-            paramsPanel.revalidate();
-            paramsPanel.repaint();
-
-        });
-
-        delPodcastButton.addActionListener(e -> {
-            int paramsCount = paramsPanel.getComponentCount();
-            if (paramsPanel.getComponentCount() != 0) {
-                paramsPanel.remove(paramsCount-1);
-                paramTextFields.remove(paramsCount-1);
-                packCustDialog(addDialog);
-                paramsPanel.revalidate();
-                paramsPanel.repaint();
-            }
-        });
-
-        acceptButton.addActionListener(e -> {
-            Podcast newPodcast = new Podcast(channelNameInput.getText());
-            newPodcast.setParams(textFieldArrToStringArr(paramTextFields));
-            podcasts.add(newPodcast);
-            int paramAmount = mostParams(podcasts);
-
-            String[][] podcastsInfoLists = Podcast.getSeachDataAs2dArr(podcasts, paramAmount);
-            updatePodcastTable(podcastsInfoLists);
-            try {
-                pb.updatePodcastsFile();
-                updatePodcastPanel(pb.getUpdatedThumbnails());
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        return addDialogPanel;
-    }
-
-    public int mostParams(ArrayList<Podcast> podcasts) {
-        int mostParams = 0;
-        for (Podcast podcast : podcasts) {
-            int tempAmount = podcast.getParamAmount();
-            if (tempAmount > mostParams) mostParams = tempAmount;
-        }
-        return mostParams;
-    }
-    private ArrayList<String> textFieldArrToStringArr(ArrayList<JTextField> textFields) {
-        ArrayList<String> strings = new ArrayList<>();
-        textFields.forEach(textField -> strings.add(textField.getText()));
-        return strings;
-    }
-
-    private JTextField createParamPanel(JPanel parent) {
-        JPanel panel = createColorPanel(new FlowLayout(), Color.WHITE, parent);
-        createLabel("Search param:", smallFont, panel);
-        return createTextField("Insert Search param", smallFont, panel);
-    }
-
-    public JPanel createPodcastCard(Image settingsButtonImage, ArrayList<JPanel> podcastPanels)  {
-        JPanel podcastCard         = new JPanel(new BorderLayout());
-        JPanel settingsButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        podcastPanel               = new JPanel(new FlowLayout());
-
-        settingsButtonPanel.setBackground(Color.ORANGE);
-        podcastPanel.setBackground(Color.WHITE);
-
-        podcastCard.add(settingsButtonPanel, BorderLayout.NORTH);
-        podcastCard.add(podcastPanel, BorderLayout.CENTER);
-
-        JButton podcastsButton = createImageButton("podcastsButton", settingsButtonImage, 40, 40);
-
-        settingsButtonPanel.add(podcastsButton);
-        podcastPanels.forEach(podcastPanel::add);
-
-        return podcastCard;
-    }
-
-    public void updatePodcastPanel(ArrayList<JPanel> podcastPanels) {
-        podcastPanel.removeAll();
-        podcastPanels.forEach(podcastPanel::add);
-    }
-
-    public JPanel createSettingsCard(Image settingsButtonImage, JPanel podcastPanel) {
-        JPanel settingsPanel    = createColorPanel(new BorderLayout(), Color.WHITE);
-        JPanel settingsPanelTop = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.ORANGE);
-        JPanel settingsPanelBot = new JPanel();
-        settingsPanelBot.setLayout(new BoxLayout(settingsPanelBot, BoxLayout.Y_AXIS));
-        settingsPanelBot.setBackground(Color.WHITE);
-
-        settingsPanel.add(settingsPanelTop, BorderLayout.NORTH);
-        settingsPanel.add(settingsPanelBot, BorderLayout.WEST);
-
-        JButton settingsButton = createImageButton("settingsButton", settingsButtonImage, 40, 40);
-        settingsPanelTop.add(settingsButton);
-
-        JPanel apiKeyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        apiKeyPanel.setBackground(Color.WHITE);
-
-        JLabel apikeyText = new JLabel("Apikey: ");
-
-        apiKeyPanel.add(apikeyText);
-        apiKeyPanel.add(apiInput);
-
-        settingsPanelBot.add(apiKeyPanel);
-        settingsPanelBot.add(podcastPanel);
-
-        return settingsPanel;
-    }
-
-    public JPanel createPodcastListPanel(String[][] podcastsInfoLists) {
-        JPanel addPodcastPanel = createColorPanel(new BorderLayout(), Color.WHITE);
-        JPanel addDelPanel     = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.NORTH);
-        JPanel podcastsPanel   = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.WEST);
-
-        JButton addPodcastButton  = createImageButton("addPodcastButton", pb.getImage("addImage"), 40, 40);
-        JButton delPodcastButton  = createImageButton("delPodcastButton", pb.getImage("delImage"), 40, 40);
-        //JButton editPodcastButton = createImageButton("editPodcastButton", pb.getImage("editImage"), 40, 40);
-
-        getButtonByName("addPodcastButton").addActionListener(e -> addPodcast(pb.getPodcasts()));
-        getButtonByName("delPodcastButton").addActionListener(e -> delPodcast(pb.getPodcasts()));
-
-        addDelPanel.add(addPodcastButton);
-        addDelPanel.add(delPodcastButton);
-        //addDelPanel.add(editPodcastButton);
-
-        initPodcastTable(podcastsInfoLists);
-        podcastTable.setDefaultEditor(Object.class, null);
-
-        podcastTableStyling(podcastsPanel);
-
-        return addPodcastPanel;
-    }
-
-    private void initPodcastTable(String[][] podcastsInfoLists) {
-        int paramAmount = 0;
-        if (podcastsInfoLists.length != 0) paramAmount = podcastsInfoLists[0].length - 1;
-
-        getTableHeader(podcastsInfoLists, paramAmount);
-        podcastTable = new JTable(podcastModel);
-    }
-
-    private void getTableHeader(String[][] podcastsInfoLists, int paramAmount) {
-        ArrayList<String> columnNames = new ArrayList<>();
-        columnNames.add("Channel");
-
-        for (int i = 1; i <= paramAmount; i++) {
-            columnNames.add("param " + i);
-        }
-        podcastModel = new DefaultTableModel(podcastsInfoLists, columnNames.toArray());
-    }
-
-    public void updatePodcastTable(String[][] podcastsInfoLists) {
-        int paramAmount;
-        if (podcastsInfoLists.length == 0) paramAmount = 0;
-        else paramAmount = podcastsInfoLists[0].length-1;
-
-        getTableHeader(podcastsInfoLists, paramAmount);
-        podcastTable.setModel(podcastModel);
-
-        podcastTable.revalidate();
-        podcastTable.repaint();
-    }
-
-    private void podcastTableStyling(JPanel podcastsPanel) {
-        JScrollPane scrollPanePodcastTable = new JScrollPane(podcastTable);
-        podcastsPanel.add(scrollPanePodcastTable);
-
-        podcastTable.setBackground(Color.WHITE);
-        scrollPanePodcastTable.setBackground(Color.WHITE);
-        scrollPanePodcastTable.getViewport().setBackground(Color.WHITE);
-
-        podcastTable.setFont(new Font("Arial", Font.PLAIN, 11));
-
-        podcastTable.getTableHeader().setBackground(Color.ORANGE);
-        podcastTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 20));
-        podcastTable.getTableHeader().setReorderingAllowed(false);
-    }
-
-    public void createFrameWithCardLayout(String frameTitle, int width, int height, Image frameIcon, JPanel ... cardList) {
-        frameWidth  = width;
-        frameHeight = height;
-
-        frame = new JFrame(frameTitle);
-        frame.setSize(frameWidth, frameHeight);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-
-        initCardLayout(cardList);
-        frame.add(cards);
-
-        frame.setIconImage(frameIcon);
-        frame.setVisible(true);
-    }
+//######################################################################################################################
+//CARD CHANGER
+//######################################################################################################################
 
     public void initCardLayout(JPanel ... panels) {
         cards = new JPanel();
@@ -330,31 +135,247 @@ public class UI extends JFrame {
         cl.show(cards, "1");
     }
 
-    public JPanel createPodcastThumbnail(Podcast podcast) {
-        if (podcast.getNewestPodcastThumbnailUrl().isEmpty()) {
-            System.err.println("ERR: Url was empty in createPodcastThumbnail");
+    public void changeCard() {
+        cl.next(cards);
+    }
+//######################################################################################################################
+//PODCAST CARD
+//######################################################################################################################
+
+    public void initPodcastCard()  {
+        settingsButtonPanel.setBackground(Color.ORANGE);
+        podcastPanel.setBackground(Color.WHITE);
+
+        podcastCard.add(settingsButtonPanel, BorderLayout.NORTH);
+        podcastCard.add(podcastPanel, BorderLayout.CENTER);
+
+        //add functionality
+        settingsButton = createImageButton(settingImage, 40, 40);
+        settingsButtonPanel.add(settingsButton);
+    }
+
+    public void updateThumbnails(ArrayList<Image> podcastThumbnails, ArrayList<String> podcastTitles) {
+        int podcastAmount = podcastThumbnails.size();
+
+        if (podcastAmount != podcastTitles.size()) {
+            System.err.println("ERR: not same amount of Thumbnails and titles given");
+            return;
+        }
+
+        podcastThumbnailPanels.clear();
+        for (int i = 0; i < podcastAmount; i++) {
+            JPanel thumbnail = createThumbnailPanel(podcastThumbnails.get(i), podcastTitles.get(i));
+            if (thumbnail == null) {
+                System.err.println("ERR: thumbnail wan null");
+                continue;
+            }
+            podcastThumbnailPanels.add(thumbnail);
+        }
+        podcastPanel.removeAll();
+        podcastThumbnailPanels.forEach(podcastPanel::add);
+    }
+
+    private JPanel createThumbnailPanel(Image podcastThumbnail, String podcastTitle) {
+        if (podcastThumbnail == null || podcastTitle == null) {
+            System.err.println("ERR: no Thumbnail or title given");
             return null;
         }
-        JLabel thumbnail  = makeImgLabel(500, 300, pb.urlToImage(podcast.getNewestPodcastThumbnailUrl()));
-        JLabel videoTitle = new JLabel(podcast.getNewestPodcastTitle());
-        videoTitle.setFont(mediumFont);
-
         JPanel podcastFront = new JPanel();
         podcastFront.setBackground(Color.WHITE);
         podcastFront.setLayout(new BoxLayout(podcastFront, BoxLayout.Y_AXIS));
+
+        JLabel thumbnail  = makeImgLabel(thumbnailWidth, thumbnailHeigth, podcastThumbnail);
         podcastFront.add(thumbnail);
-        podcastFront.add(videoTitle);
+
+        createLabel(podcastTitle, mediumFont, podcastFront);
         return podcastFront;
     }
 
-    public ArrayList<JPanel> PodcastToThumbnails(ArrayList<Podcast> podcasts) {
-        ArrayList<JPanel> thumbnails = new ArrayList<>();
-        podcasts.forEach(podcast -> {
-            JPanel thumbnail = createPodcastThumbnail(podcast);
-            if (thumbnail == null) return;
-            thumbnails.add(createPodcastThumbnail(podcast));
-        });
-        return thumbnails;
+
+//######################################################################################################################
+//SETTINGS
+//######################################################################################################################
+
+    // maybe make class
+    public void initSettingsCard() {
+        settingsPanelBot.setLayout(new BoxLayout(settingsPanelBot, BoxLayout.Y_AXIS));
+        settingsPanelBot.setBackground(Color.WHITE);
+
+        settingsCard.add(settingsPanelTop, BorderLayout.NORTH);
+        settingsCard.add(settingsPanelBot, BorderLayout.WEST);
+
+        //add functionality
+        podcastsButton = createImageButton(settingImage, 40, 40);
+        settingsPanelTop.add(podcastsButton);
+
+        apiKeyPanel.add(apikeyText);
+        apiKeyPanel.add(apiInput);
+
+        settingsPanelBot.add(apiKeyPanel);
+        settingsPanelBot.add(addPodcastPanel);
+    }
+
+    public void addPodcast() {
+        clearDialogParams();
+        addDialog = new CustomDialog(frame, "Add podcast", addDialogPanel, acceptButton);
+        addDialog.setVisible(true);
+    }
+
+    public int delPodcast() {
+        int selectedRow = podcastTable.getSelectedRow();
+        if(selectedRow != -1) {
+            podcastModel.removeRow(selectedRow);
+            return selectedRow;
+        }
+        return -1;
+    }
+
+//######################################################################################################################
+//PODCAST TABLE IN SETTINGS
+//######################################################################################################################
+
+
+    private void initPodcastListPanel() {
+        addPodcastButton  = createImageButton(addImage, 40, 40);
+        delPodcastButton  = createImageButton(delImage, 40, 40);
+        //JButton editPodcastButton = createImageButton("editPodcastButton", pb.getImage("editImage"), 40, 40);
+
+        addDelPanel.add(addPodcastButton);
+        addDelPanel.add(delPodcastButton);
+        //addDelPanel.add(editPodcastButton);
+
+        podcastTable = new JTable();
+        podcastTable.setDefaultEditor(Object.class, null);
+
+        podcastTableStyling(tablePodcastsPanel);
+    }
+
+    public void updatePodcastTable(String[][] podcastsTableData) {
+        this.podcastsTableData = podcastsTableData;
+        int paramAmount = 0;
+        if (podcastsTableData.length != 0) paramAmount = podcastsTableData[0].length - 1;
+
+        getTableHeader(podcastsTableData, paramAmount);
+        podcastTable.setModel(podcastModel);
+
+        podcastTable.revalidate();
+        podcastTable.repaint();
+    }
+
+    private void getTableHeader(String[][] podcastsInfoLists, int paramAmount) {
+        ArrayList<String> columnNames = new ArrayList<>();
+        columnNames.add("Channel");
+
+        for (int i = 1; i <= paramAmount; i++) {
+            columnNames.add("param " + i);
+        }
+        podcastModel = new DefaultTableModel(podcastsInfoLists, columnNames.toArray());
+    }
+
+    private void podcastTableStyling(JPanel podcastsPanel) {
+        JScrollPane scrollPanePodcastTable = new JScrollPane(podcastTable);
+        podcastsPanel.add(scrollPanePodcastTable);
+
+        podcastTable.setBackground(Color.WHITE);
+        scrollPanePodcastTable.setBackground(Color.WHITE);
+        scrollPanePodcastTable.getViewport().setBackground(Color.WHITE);
+
+        podcastTable.setFont(new Font("Arial", Font.PLAIN, 11));
+
+        podcastTable.getTableHeader().setBackground(Color.ORANGE);
+        podcastTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 20));
+        podcastTable.getTableHeader().setReorderingAllowed(false);
+    }
+
+//######################################################################################################################
+//DIALOG FOR ADDING PODCASTS IM SETTINGS
+//######################################################################################################################
+
+    private void initAddDialog() {
+        paramsPanel.setLayout(new BoxLayout(paramsPanel, BoxLayout.Y_AXIS));
+        paramsPanel.setBackground(Color.WHITE);
+        addDialogPanel.add(paramsPanel);
+
+        this.addParamButton = createImageButton(addImage, 40, 40);
+        this.delParamButton = createImageButton(delImage, 40, 40);
+        this.acceptButton   = createImageButton(acceptImage, 40, 40);
+
+        addDelParamsPanel.add(addParamButton);
+        addDelParamsPanel.add(delParamButton);
+        acceptPanel.add(acceptButton);
+    }
+
+    private void clearDialogParams() {
+        paramsPanel.removeAll();
+        if (paramTextFields == null) return;
+        paramTextFields.clear();
+        channelNameInput.setText("Insert channel name");
+    }
+
+    public void addParam() {
+        paramTextFields.add(createParamPanel(paramsPanel));
+        packCustDialog(addDialog);
+        paramsPanel.revalidate();
+        paramsPanel.repaint();
+    }
+
+    private JTextField createParamPanel(JPanel parent) {
+        JPanel panel = createColorPanel(new FlowLayout(), Color.WHITE, parent);
+        createLabel("Search param:", smallFont, panel);
+        return createTextField("Insert Search param", smallFont, panel);
+    }
+
+    public void delParam() {
+        int paramsCount = paramsPanel.getComponentCount();
+        if (paramsPanel.getComponentCount() != 0) {
+            paramsPanel.remove(paramsCount-1);
+            paramTextFields.remove(paramsCount-1);
+            packCustDialog(addDialog);
+            paramsPanel.revalidate();
+            paramsPanel.repaint();
+        }
+    }
+
+    public Podcast acceptPodcast() {
+        Podcast newPodcast = new Podcast(channelNameInput.getText());
+        newPodcast.setParams(textFieldArrToStringArr(paramTextFields));
+        return  newPodcast;
+    }
+
+//######################################################################################################################
+//ACTION LISTENER ASSIGNMENT
+//######################################################################################################################
+
+    public void dialogButtonListeners(ActionListener listenForAddParamButton,
+                                      ActionListener listenForDelParamButton,
+                                      ActionListener listenForAcceptButton) {
+        addParamButton.addActionListener(listenForAddParamButton);
+        delParamButton.addActionListener(listenForDelParamButton);
+        acceptButton.addActionListener(listenForAcceptButton);
+    }
+
+    public void cardChangeButtonListener(ActionListener listenForCardChange) {
+        settingsButton.addActionListener(listenForCardChange);
+        podcastsButton.addActionListener(listenForCardChange);
+    }
+
+    public void podcastChangeButtonListeners(ActionListener listenForAddPodcastButton, ActionListener listenForDelPodcastButton) {
+        addPodcastButton.addActionListener(listenForAddPodcastButton);
+        delPodcastButton.addActionListener(listenForDelPodcastButton);
+    }
+
+//######################################################################################################################
+//UTILITY
+//######################################################################################################################
+
+    public void packCustDialog(CustomDialog dialog) {
+        dialog.pack();
+    }
+
+    private ArrayList<String> textFieldArrToStringArr(ArrayList<JTextField> textFields) {
+        ArrayList<String> strings = new ArrayList<>();
+        textFields.forEach(textField -> strings.add(textField.getText()));
+        return strings;
     }
 
     public String getApiKey() {
@@ -365,20 +386,12 @@ public class UI extends JFrame {
         this.apiInput.setText(apiKey);
     }
 
-    public JButton createImageButton(String name, Image img, int width, int hight) {
+    public JButton createImageButton(Image img, int width, int hight) {
         Image image = img.getScaledInstance(width, hight, Image.SCALE_DEFAULT);
         JButton button = new JButton(new ImageIcon(image));
         button.setBorder(BorderFactory.createEmptyBorder());
         button.setContentAreaFilled(false);
-        buttonHashtable.put(name, button);
         return button;
-    }
-
-    public void removeLabel(JLabel label) {
-        Container parent = label.getParent();
-        parent.remove(label);
-        parent.validate();
-        parent.repaint();
     }
 
     public JLabel makeImgLabel(int width, int height, Image img) {

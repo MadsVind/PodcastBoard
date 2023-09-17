@@ -5,10 +5,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-public class UI {
+public class UI extends JFrame {
 
-    //PodcastBoard
-    PodcastBoard pb = PodcastBoard.getInstance();
 
     //Frame settings
     int frameWidth;
@@ -49,6 +47,20 @@ public class UI {
 
         return ui;
     }
+
+    UI() {
+        frame = new JFrame("");
+        frame.setSize(frameWidth, frameHeight);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        initCardLayout(cardList);
+        frame.add(cards);
+
+        frame.setIconImage(frameIcon);
+        frame.setVisible(true);
+    }
+
 
     public void packCustDialog(CustomDialog dialog) {
         dialog.pack();

@@ -16,21 +16,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-
 public class Model {
     //EP (Endpoints) for different used parts of the YouTube v3 api
-    final static String YOUTUBE_EP           = "https://youtube.googleapis.com/youtube/v3/";
-    final static String SEARCH_EP            = YOUTUBE_EP + "search?";
-    final static String CHANNEL_SEARCH_EP    = SEARCH_EP + "type=channel";
-    final static String BY_CHANNEL_SEARCH_EP = SEARCH_EP + "channelId=";
-    final static String PART_SNIPPET_EP      = "&part=snippet";
-    final static String MAX_RESULTS_EP       = "&maxResults=";
-    final static String ORDER_EP             = "&order=";
-    final static String SEARCH_PARAM_EP      = "&q=";
-    final static String API_KEY_EP           = "&key=";
+    private final String YOUTUBE_EP           = "https://youtube.googleapis.com/youtube/v3/";
+    private final String SEARCH_EP            = YOUTUBE_EP + "search?";
+    private final String CHANNEL_SEARCH_EP    = SEARCH_EP + "type=channel";
+    private final String BY_CHANNEL_SEARCH_EP = SEARCH_EP + "channelId=";
+    private final String PART_SNIPPET_EP      = "&part=snippet";
+    private final String MAX_RESULTS_EP       = "&maxResults=";
+    private final String ORDER_EP             = "&order=";
+    private final String SEARCH_PARAM_EP      = "&q=";
+    private final String API_KEY_EP           = "&key=";
 
-    static HttpClient httpClient = HttpClient.newHttpClient();
+    //Path to storage files
+    private final String API_KEY_RELATIVE_PATH = "\\resources\\API_KEY.txt";
+    private final String PODCASTS_FILE_PATH    = "\\resources\\PODCASTS.ser";
+
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+
+    //Apikey
+    private String apiKey = "";
+
+    //Podcasts
+    ArrayList<Podcast> podcasts;
 
     private static Model model = null;
 
@@ -46,13 +54,20 @@ public class Model {
         return new File("").getAbsolutePath() + "\\src" + path;
     }
 
-    public String getApiKey(String apiKeyPath) {
-        String apiKey = fileToStr(apiKeyPath);
+    public void initApiKeyFromFile() {
+        apiKey = fileToStr(getDirPath(API_KEY_RELATIVE_PATH));
         if (apiKey == null) System.out.println("api key didn't exist");
-        return  apiKey;
     }
 
-    public void updatePodcastInfo(Podcast podcast, String apiKey) {
+    public void setApiKey(String apiKeyUI) {
+        this.apiKey = apiKeyUI;
+    }
+
+    public ArrayList<Podcast> getPodcasts() {
+        return podcasts;
+    }
+
+    public void updatePodcastInfo(Podcast podcast) {
         try {
             String searchChannelJson = searchChannelJson(podcast.getName().replaceAll(" ", "%20"), apiKey);
             if (jsonByHitIndex("code", 0, searchChannelJson).equals("403"))
@@ -69,19 +84,14 @@ public class Model {
         }
     }
 
-    public void updatePodcasts(ArrayList<Podcast> podcasts, String apiKey) {
+    public void updatePodcasts() {
         podcasts.forEach(podcast -> {
-            try                 {updatePodcastInfo(podcast, apiKey);}
+            try   {updatePodcastInfo(podcast);}
             catch (Exception e) {throw new RuntimeException(e);}
         });
     }
 
     // this needs to be generalized
-    public void setSettingsButtonBehaivior(JButton settingsButton, CardLayout cl, JPanel cards) {
-        ActionListener switchButtonListener = e -> cl.next(cards);
-        settingsButton.addActionListener(switchButtonListener);
-    }
-
 
     public Image imgFromWebPath(String path) {
         try {
@@ -181,7 +191,7 @@ public class Model {
     }
 
     // Taken from https://www.codejava.net/java-se/file-io/how-to-read-and-write-text-file-in-java
-    public static String fileToStr(String fileName) {
+    public String fileToStr(String fileName) {
         try {
             FileReader reader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(reader);
@@ -213,7 +223,7 @@ public class Model {
 
     // Taken from Safwan Hijazi on stack overflow
     // https://stackoverflow.com/a/31158468
-    private static void check(String key, JsonElement jsonElement, List<String> list) {
+    private void check(String key, JsonElement jsonElement, List<String> list) {
 
         if (jsonElement.isJsonArray()) {
             for (JsonElement jsonElement1 : jsonElement.getAsJsonArray()) {

@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 
-//new commet
 public class Model {
     //EP (Endpoints) for different used parts of the YouTube v3 api
     final static String YOUTUBE_EP           = "https://youtube.googleapis.com/youtube/v3/";

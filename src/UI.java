@@ -165,7 +165,7 @@ public class UI extends JFrame {
         podcastCard.add(podcastPanel, BorderLayout.CENTER);
 
         //add functionality
-        settingsButton = new ImageButton(settingImageDark, settingImage,40, 40);
+        settingsButton = new ImageButton(settingImage, settingImageDark,40, 40);
         settingsButtonPanel.add(settingsButton);
     }
 
@@ -220,7 +220,7 @@ public class UI extends JFrame {
         settingsCard.add(settingsPanelBot, BorderLayout.WEST);
 
         //add functionality
-        podcastsButton = new ImageButton(settingImageDark, settingImage, 40, 40);
+        podcastsButton = new ImageButton(settingImage, settingImageDark,40, 40);
         settingsPanelTop.add(podcastsButton);
 
         apiKeyPanel.add(apikeyText);

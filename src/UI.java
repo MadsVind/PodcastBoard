@@ -3,7 +3,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 public class UI extends JFrame {
     //Fonts
@@ -84,18 +83,34 @@ public class UI extends JFrame {
     private final Image editImage;
     private final Image acceptImage;
 
+    private final Image settingImageDark;
+    private final Image addImageDark;
+    private final Image delImageDark;
+    private final Image editImageDark;
+    private final Image acceptImageDark;
+
     private String[][] podcastsTableData = null;
 
     public UI(int frameHeight, int frameWidth,
-              Image frameIcon, Image settingImage, Image addImage, Image delImage, Image editImage, Image acceptImage) {
+              Image frameIcon, Image settingImage, Image addImage, Image delImage, Image editImage, Image acceptImage,
+              Image settingImageDark, Image addImageDark, Image delImageDark, Image editImageDark, Image acceptImageDark) {
+
         this.frameHeight = frameHeight;
         this.frameWidth  = frameWidth;
 
         this.settingImage = settingImage;
         this.addImage     = addImage;
+
         this.delImage     = delImage;
         this.editImage    = editImage;
         this.acceptImage  = acceptImage;
+
+        this.settingImageDark = settingImageDark;
+        this.addImageDark     = addImageDark;
+
+        this.delImageDark     = delImageDark;
+        this.editImageDark    = editImageDark;
+        this.acceptImageDark  = acceptImageDark;
 
         this.setSize(frameWidth, frameHeight);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -150,7 +165,7 @@ public class UI extends JFrame {
         podcastCard.add(podcastPanel, BorderLayout.CENTER);
 
         //add functionality
-        settingsButton = createImageButton(settingImage, 40, 40);
+        settingsButton = new ImageButton(settingImageDark, settingImage,40, 40);
         settingsButtonPanel.add(settingsButton);
     }
 
@@ -184,7 +199,7 @@ public class UI extends JFrame {
         podcastFront.setBackground(Color.WHITE);
         podcastFront.setLayout(new BoxLayout(podcastFront, BoxLayout.Y_AXIS));
 
-        JLabel thumbnail  = makeImgLabel(thumbnailWidth, thumbnailHeigth, podcastThumbnail);
+        JLabel thumbnail  = new ImageLabel(podcastThumbnail, thumbnailWidth, thumbnailHeigth);
         podcastFront.add(thumbnail);
 
         createLabel(podcastTitle, mediumFont, podcastFront);
@@ -205,7 +220,7 @@ public class UI extends JFrame {
         settingsCard.add(settingsPanelBot, BorderLayout.WEST);
 
         //add functionality
-        podcastsButton = createImageButton(settingImage, 40, 40);
+        podcastsButton = new ImageButton(settingImageDark, settingImage, 40, 40);
         settingsPanelTop.add(podcastsButton);
 
         apiKeyPanel.add(apikeyText);
@@ -236,8 +251,8 @@ public class UI extends JFrame {
 
 
     private void initPodcastListPanel() {
-        addPodcastButton  = createImageButton(addImage, 40, 40);
-        delPodcastButton  = createImageButton(delImage, 40, 40);
+        addPodcastButton  = new ImageButton(addImageDark, addImage, 40, 40);
+        delPodcastButton  = new ImageButton(delImageDark, delImage, 40, 40);
         //JButton editPodcastButton = createImageButton("editPodcastButton", pb.getImage("editImage"), 40, 40);
 
         addDelPanel.add(addPodcastButton);
@@ -296,9 +311,9 @@ public class UI extends JFrame {
         paramsPanel.setBackground(Color.WHITE);
         addDialogPanel.add(paramsPanel);
 
-        this.addParamButton = createImageButton(addImage, 40, 40);
-        this.delParamButton = createImageButton(delImage, 40, 40);
-        this.acceptButton   = createImageButton(acceptImage, 40, 40);
+        this.addParamButton = new ImageButton(addImageDark, addImage, 40, 40);
+        this.delParamButton = new ImageButton(delImageDark, delImage, 40, 40);
+        this.acceptButton   = new ImageButton(acceptImageDark, acceptImage, 40, 40);
 
         addDelParamsPanel.add(addParamButton);
         addDelParamsPanel.add(delParamButton);
@@ -386,18 +401,58 @@ public class UI extends JFrame {
         this.apiInput.setText(apiKey);
     }
 
-    public JButton createImageButton(Image img, int width, int hight) {
-        Image image = img.getScaledInstance(width, hight, Image.SCALE_DEFAULT);
-        JButton button = new JButton(new ImageIcon(image));
-        button.setBorder(BorderFactory.createEmptyBorder());
-        button.setContentAreaFilled(false);
-        return button;
+
+    static class ImageButton extends JButton {
+        Icon releasedIcon;
+        Icon pressedIcon;
+        ImageButton button;
+
+        public ImageButton(Image pressedImage, Image releasedImage, int width, int heigth) {
+            this.button = this;
+
+            this.releasedIcon = new ImageIcon(releasedImage.getScaledInstance(width, heigth, Image.SCALE_DEFAULT));
+            this.pressedIcon  = new ImageIcon(pressedImage.getScaledInstance(width, heigth, Image.SCALE_DEFAULT));
+
+            this.setIcon(releasedIcon);
+
+            this.setBorder(BorderFactory.createEmptyBorder());
+            this.setContentAreaFilled(false);
+            this.addMouseListener(new MyAdapter());
+        }
+
+        public ImageButton(Image image, int width, int heigth) {
+            this.button = this;
+
+            this.releasedIcon = new ImageIcon(image.getScaledInstance(width, heigth, Image.SCALE_DEFAULT));
+
+            this.setIcon(releasedIcon);
+
+            this.setBorder(BorderFactory.createEmptyBorder());
+            this.setContentAreaFilled(false);
+        }
+
+        private class MyAdapter extends MouseAdapter {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                button.setIcon(pressedIcon);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                super.mouseReleased(e);
+                button.setIcon(releasedIcon);
+            }
+        }
     }
 
-    public JLabel makeImgLabel(int width, int height, Image img) {
-        JLabel label = new JLabel();
-        label.setIcon(new ImageIcon(img.getScaledInstance(width, height, Image.SCALE_DEFAULT)));
-        return label;
+    static class ImageLabel extends JLabel {
+        Icon icon;
+
+        public ImageLabel(Image image, int width, int heigth) {
+            this.icon = new ImageIcon(image.getScaledInstance(width, heigth, Image.SCALE_DEFAULT));
+            this.setIcon(icon);
+        }
     }
 
     private JPanel createColorPanel(Object layout, Color color) {

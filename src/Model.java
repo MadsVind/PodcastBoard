@@ -3,6 +3,7 @@ import com.google.gson.JsonParser;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;

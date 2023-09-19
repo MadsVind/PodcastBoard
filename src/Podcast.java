@@ -14,7 +14,7 @@ public class Podcast implements Serializable {
 
     //Result data
     private String newestPodcastThumbnailUrl  = null;
-    private String newestPodcastTitle          = null;
+    private String newestPodcastTitle         = null;
 
     public Podcast(String name) {
         this.name = name;

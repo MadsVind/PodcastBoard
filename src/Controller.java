@@ -27,6 +27,7 @@ public class Controller {
         this.ui.updatePodcastTable(Podcast.getSeachDataAs2dArr(model.getPodcasts(), model.getMaxPodcastParams()));
 
         model.getPodcastListFromFile();
+        updateApiKey();
         updatePodcastsShown();
     }
 

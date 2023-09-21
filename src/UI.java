@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
@@ -304,14 +305,20 @@ public class UI extends JFrame {
         podcastsPanel.add(scrollPanePodcastTable);
 
         podcastTable.setBackground(Color.WHITE);
+        podcastTable.setSelectionBackground(Color.ORANGE);
+        podcastTable.setFont(new Font("Arial", Font.PLAIN, 11));
+        podcastTable.setShowGrid(false);
+
         scrollPanePodcastTable.setBackground(Color.WHITE);
         scrollPanePodcastTable.getViewport().setBackground(Color.WHITE);
-
-        podcastTable.setFont(new Font("Arial", Font.PLAIN, 11));
+        scrollPanePodcastTable.setBorder(BorderFactory.createEmptyBorder());
+        scrollPanePodcastTable.setViewportBorder(BorderFactory.createEmptyBorder());
 
         podcastTable.getTableHeader().setBackground(Color.ORANGE);
+        podcastTable.getTableHeader().setBorder(new LineBorder(Color.ORANGE, 5, true));
         podcastTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 20));
         podcastTable.getTableHeader().setReorderingAllowed(false);
+        podcastTable.getTableHeader().setResizingAllowed(false);
     }
 
 //######################################################################################################################

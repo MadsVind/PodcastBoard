@@ -195,6 +195,8 @@ public class Model {
             podcasts.forEach(podcast -> System.out.println("From file: " + podcast.getName()));
             fileInputStream.close();
             objectInputStream.close();
+
+            mostParams();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

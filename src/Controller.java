@@ -9,18 +9,25 @@ public class Controller {
     private Model model;
     private UI ui;
 
+    //Edited
+    private int editIndex;
+
     public Controller(UI ui, Model model) {
         this.model = model;
         this.ui    = ui;
 
-        this.ui.dialogButtonListeners(new listenForAddParamButton(), new listenForDelParamButton(), new listenForAcceptButton());
+        this.ui.dialogButtonListeners(new listenForAddParamButton(),
+                                      new listenForDelParamButton(),
+                                      new listenForAcceptButton());
         this.ui.cardChangeButtonListener(new listenForCardChange());
-        this.ui.podcastChangeButtonListeners(new listenForAddPodcastButton(), new listenForDelPodcastButton());
+        this.ui.podcastChangeButtonListeners(new listenForAddPodcastButton(),
+                                             new listenForDelPodcastButton(),
+                                             new listenForEditPodcastButton());
 
         this.ui.updatePodcastTable(Podcast.getSeachDataAs2dArr(model.getPodcasts(), model.getMaxPodcastParams()));
 
         model.getPodcastListFromFile();
-        updatePodcasts();
+        updatePodcastsShown();
     }
 
     private boolean updateApiKey() {
@@ -40,15 +47,17 @@ public class Controller {
     }
 
 
-    private void updatePodcasts() {
+    private void updatePodcastsData() {
         if (!updateApiKey()) {
             System.err.println("ERR: No APIKEY");
             return;
         }
         model.updatePodcasts();
 
-        System.out.println(model.getPodcasts().size());
+        updatePodcastsShown();
+    }
 
+    private void updatePodcastsShown() {
         ArrayList<Image> podcastThumbnails = model.getPodcastThumbnails();
         ArrayList<String> podcastTitles    = model.getPodcastTitles();
         ui.updateThumbnails(podcastThumbnails, podcastTitles);
@@ -60,6 +69,7 @@ public class Controller {
     class listenForAddPodcastButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            editIndex = model.getPodcastsSize();
             ui.addPodcast();
         }
     }
@@ -68,15 +78,27 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
             int index = ui.delPodcast();
+            if (index == -1) return;
             model.removePodcast(index);
-            System.out.println(" delpodcast");
-            updatePodcasts();
+            updatePodcastsShown();
+        }
+    }
+
+    class listenForEditPodcastButton implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            editIndex = ui.delPodcast();
+            if (editIndex == -1) return;
+            Podcast beforePodcast = model.getPodcasts().get(editIndex);
+            model.removePodcast(editIndex);
+            ui.editPodcast(beforePodcast);
         }
     }
 
     class listenForAddParamButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            editIndex = model.getPodcastsSize();
             ui.addParam();
         }
     }
@@ -92,8 +114,8 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
             Podcast podcast = ui.acceptPodcast();
-            model.addPodcast(podcast);
-            updatePodcasts();
+            model.addPodcast(podcast, editIndex);
+            updatePodcastsData();
         }
     }
 

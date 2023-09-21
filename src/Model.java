@@ -89,8 +89,17 @@ public class Model {
         podcasts.add(podcast);
     }
 
+    public void addPodcast(Podcast podcast, int index) {
+        podcasts.add(index, podcast);
+    }
+
     public void removePodcast(int index) {
+        System.out.println("deleted: " + podcasts.get(index).getName());
         podcasts.remove(index);
+    }
+
+    public int getPodcastsSize() {
+        return podcasts.size();
     }
 
     private void mostParams() {
@@ -128,7 +137,6 @@ public class Model {
         podcasts.forEach(podcast -> {
             updatePodcastInfo(podcast);
             mostParams();
-
         });
         writePodcastListToFile();
     }

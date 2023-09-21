@@ -37,17 +37,18 @@ public class UI extends JFrame {
     private final JPanel apiKeyPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
     private final JLabel apikeyText  = new JLabel("Apikey: ");
 
-    private JButton podcastsButton;
+    private ImageButton podcastsButton;
 
     //Podcast table panel
     private final JPanel addPodcastPanel    = createColorPanel(new BorderLayout(), Color.WHITE);
     private final JPanel addDelPanel        = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.NORTH);
     private final JPanel tablePodcastsPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.WEST);
 
-    private JButton addPodcastButton;
-    private JButton delPodcastButton;
+    private ImageButton addPodcastButton;
+    private ImageButton delPodcastButton;
+    private ImageButton editPodcastButton;
 
-    private JButton settingsButton;
+    private ImageButton settingsButton;
 
     //Podcast add dialog
     private CustomDialog addDialog = null;
@@ -61,9 +62,12 @@ public class UI extends JFrame {
     private final JLabel channelNameLabel = createLabel("Podcast channel name:", smallFont, channelNamePanel);
     private final JTextField channelNameInput  = createTextField("Insert channel name", smallFont, channelNamePanel);
 
-    private JButton addParamButton;
-    private JButton delParamButton;
-    private JButton acceptButton;
+    private ImageButton addParamButton;
+    private ImageButton delParamButton;
+
+    // accept buttons
+    private ImageButton acceptButton;
+
 
     private final ArrayList<JTextField> paramTextFields = new ArrayList<>();
 
@@ -245,6 +249,14 @@ public class UI extends JFrame {
         return -1;
     }
 
+    public void editPodcast( Podcast podcast) {
+        clearDialogParams();
+        addDialog = new CustomDialog(frame, "Edit podcast", addDialogPanel, acceptButton);
+        channelNameInput.setText(podcast.getName());
+        podcast.getParams().forEach(this::addParam);
+        addDialog.setVisible(true);
+    }
+
 //######################################################################################################################
 //PODCAST TABLE IN SETTINGS
 //######################################################################################################################
@@ -253,11 +265,11 @@ public class UI extends JFrame {
     private void initPodcastListPanel() {
         addPodcastButton  = new ImageButton(addImageDark, addImage, 40, 40);
         delPodcastButton  = new ImageButton(delImageDark, delImage, 40, 40);
-        //JButton editPodcastButton = createImageButton("editPodcastButton", pb.getImage("editImage"), 40, 40);
+        editPodcastButton = new ImageButton(editImageDark, editImage, 40, 40);
 
         addDelPanel.add(addPodcastButton);
         addDelPanel.add(delPodcastButton);
-        //addDelPanel.add(editPodcastButton);
+        addDelPanel.add(editPodcastButton);
 
         podcastTable = new JTable();
         podcastTable.setDefaultEditor(Object.class, null);
@@ -311,8 +323,9 @@ public class UI extends JFrame {
         paramsPanel.setBackground(Color.WHITE);
         addDialogPanel.add(paramsPanel);
 
-        this.addParamButton = new ImageButton(addImageDark, addImage, 40, 40);
-        this.delParamButton = new ImageButton(delImageDark, delImage, 40, 40);
+        this.addParamButton  = new ImageButton(addImageDark, addImage, 40, 40);
+        this.delParamButton  = new ImageButton(delImageDark, delImage, 40, 40);
+
         this.acceptButton   = new ImageButton(acceptImageDark, acceptImage, 40, 40);
 
         addDelParamsPanel.add(addParamButton);
@@ -334,10 +347,23 @@ public class UI extends JFrame {
         paramsPanel.repaint();
     }
 
+    public void addParam(String paramValue) {
+        paramTextFields.add(createParamPanel(paramsPanel, paramValue));
+        packCustDialog(addDialog);
+        paramsPanel.revalidate();
+        paramsPanel.repaint();
+    }
+
     private JTextField createParamPanel(JPanel parent) {
         JPanel panel = createColorPanel(new FlowLayout(), Color.WHITE, parent);
         createLabel("Search param:", smallFont, panel);
         return createTextField("Insert Search param", smallFont, panel);
+    }
+
+    private JTextField createParamPanel(JPanel parent, String paramValue) {
+        JPanel panel = createColorPanel(new FlowLayout(), Color.WHITE, parent);
+        createLabel("Search param:", smallFont, panel);
+        return createTextField(paramValue, smallFont, panel);
     }
 
     public void delParam() {
@@ -374,9 +400,12 @@ public class UI extends JFrame {
         podcastsButton.addActionListener(listenForCardChange);
     }
 
-    public void podcastChangeButtonListeners(ActionListener listenForAddPodcastButton, ActionListener listenForDelPodcastButton) {
+    public void podcastChangeButtonListeners(ActionListener listenForAddPodcastButton,
+                                             ActionListener listenForDelPodcastButton,
+                                             ActionListener listenForEditPodcastButton) {
         addPodcastButton.addActionListener(listenForAddPodcastButton);
         delPodcastButton.addActionListener(listenForDelPodcastButton);
+        editPodcastButton.addActionListener(listenForEditPodcastButton);
     }
 
 //######################################################################################################################

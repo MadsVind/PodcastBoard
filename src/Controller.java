@@ -2,7 +2,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Controller {
 
@@ -16,19 +19,56 @@ public class Controller {
         this.model = model;
         this.ui    = ui;
 
-        this.ui.dialogButtonListeners(new listenForAddParamButton(),
-                                      new listenForDelParamButton(),
-                                      new listenForAcceptButton());
-        this.ui.cardChangeButtonListener(new listenForCardChange());
-        this.ui.podcastChangeButtonListeners(new listenForAddPodcastButton(),
-                                             new listenForDelPodcastButton(),
-                                             new listenForEditPodcastButton());
+        this.ui.dialogButtonListeners(new ListenForAddParamButton(),
+                                      new ListenForDelParamButton(),
+                                      new ListenForAcceptButton());
+
+        this.ui.cardChangeButtonListener(new ListenForCardChange());
+
+        this.ui.podcastChangeButtonListeners(new ListenForAddPodcastButton(),
+                                             new ListenForDelPodcastButton(),
+                                             new ListenForEditPodcastButton());
+
+        this.ui.settingsButtonListeners(new ListenForWindowBoxCheck());
 
         this.ui.updatePodcastTable(Podcast.getSeachDataAs2dArr(model.getPodcasts(), model.getMaxPodcastParams()));
 
+
+        loadInformation();
+        saveDataOnClose();
+    }
+
+    private void loadInformation() {
         model.getPodcastListFromFile();
         updateApiKey();
         updatePodcastsShown();
+
+        String[] settingsArr = model.windowSettingFromFile();
+
+        if (!isEmptyStrArr(settingsArr)) {
+            ui.setWindowScalableCheckbox(Boolean.parseBoolean(settingsArr[0]));
+            ui.setWindowWidthInput(settingsArr[1]);
+            ui.setWindowHeightInput(settingsArr[2]);
+        }
+        ui.updateFrameSize();
+    }
+
+    private void saveDataOnClose() {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            public void run() {
+                String str = Boolean.toString(ui.getWindowScalableCheckbox()) + " "
+                        + ui.getWindowWidthInput() + " "
+                        + ui.getWindowHeightInput();
+                model.saveData(str);
+            }
+        }));
+    }
+
+    private Boolean isEmptyStrArr(String[] strArr) {
+        for (String str : strArr) {
+            if (Objects.equals(str, " ")) return true;
+        }
+        return false;
     }
 
     private boolean updateApiKey() {
@@ -54,7 +94,6 @@ public class Controller {
             return;
         }
         model.updatePodcasts();
-
         updatePodcastsShown();
     }
 
@@ -67,7 +106,7 @@ public class Controller {
         ui.updatePodcastTable(podcastsTableData);
     }
 
-    class listenForAddPodcastButton implements ActionListener {
+    class ListenForAddPodcastButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             editIndex = model.getPodcastsSize();
@@ -75,7 +114,7 @@ public class Controller {
         }
     }
 
-    class listenForDelPodcastButton implements ActionListener {
+    class ListenForDelPodcastButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             int index = ui.delPodcast();
@@ -85,7 +124,7 @@ public class Controller {
         }
     }
 
-    class listenForEditPodcastButton implements ActionListener {
+    class ListenForEditPodcastButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             editIndex = ui.delPodcast();
@@ -96,7 +135,7 @@ public class Controller {
         }
     }
 
-    class listenForAddParamButton implements ActionListener {
+    class ListenForAddParamButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             editIndex = model.getPodcastsSize();
@@ -104,14 +143,14 @@ public class Controller {
         }
     }
 
-    class listenForDelParamButton implements ActionListener {
+    class ListenForDelParamButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             ui.delParam();
         }
     }
 
-    class listenForAcceptButton implements ActionListener {
+    class ListenForAcceptButton implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             Podcast podcast = ui.acceptPodcast();
@@ -120,10 +159,17 @@ public class Controller {
         }
     }
 
-    class listenForCardChange implements ActionListener {
+    class ListenForCardChange implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             ui.changeCard();
+        }
+    }
+
+    class ListenForWindowBoxCheck implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ui.windowBoxChecked();
         }
     }
 }

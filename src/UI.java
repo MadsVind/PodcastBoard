@@ -1,6 +1,10 @@
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -10,14 +14,17 @@ public class UI extends JFrame {
     final Font smallFont = new Font("Arial", Font.BOLD, 10 );
     final Font mediumFont = new Font("Arial", Font.BOLD, 16 );
 
-    //Frame settings
-    private int frameWidth;
-    private int frameHeight;
-    private final JFrame frame = new JFrame("PodcastBoard");
+    //Frame size
+    private int podcastFrameWidth  = 0;
+    private int podcastFrameHeight = 0;
+
+    private final int settingsFrameWidth = 500;
+    private final int settingsFrameHeight = 700;
 
     //Cards objects
-    private CardLayout cl = null;
-    private JPanel  cards = null;
+    private CardLayout cl   = null;
+    private JPanel  cards   = null;
+    private int currentCard = 1;
 
     //PodcastCard
     private final JPanel podcastCard         = new JPanel(new BorderLayout());
@@ -31,19 +38,30 @@ public class UI extends JFrame {
     private final int thumbnailHeigth = 300;
 
     //SettingsCard
-    private final JPanel settingsCard     = createColorPanel(new BorderLayout(), Color.WHITE);
-    private final JPanel settingsPanelTop = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.ORANGE);
+    private final JPanel settingsCard     = new ColorPanel(new BorderLayout(), Color.WHITE);
+    private final JPanel settingsPanelTop = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.ORANGE);
     private final JPanel settingsPanelBot = new JPanel();
 
-    private final JPanel apiKeyPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
-    private final JLabel apikeyText  = new JLabel("Apikey: ");
+    private final JPanel apiKeyPanel      = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
+    private final JLabel apikeyText       = new Label("Apikey: ", smallFont, apiKeyPanel);
+    private final JPasswordField apiInput = new JPasswordField(18);
+
+    private final JPanel    windowScalablePanel    = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
+    private final JCheckBox windowScalableCheckbox = new CheckBox(windowScalablePanel, Color.WHITE);
+    private final JLabel    windowScalableLabel    = new Label("Window Scalable", smallFont, windowScalablePanel);
+
+    private final JPanel windowScalePanel      = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
+    private final JTextField windowWidthInput  = new TextField("1200",         smallFont, windowScalePanel);
+    private final JLabel windowScaleX          = new Label(" X ",               smallFont, windowScalePanel);
+    private final JTextField windowHeightInput = new TextField("800",        smallFont, windowScalePanel);
+    private final JLabel windowScaleText       = new Label("Window resolution", smallFont, windowScalePanel);
 
     private ImageButton podcastsButton;
 
     //Podcast table panel
-    private final JPanel addPodcastPanel    = createColorPanel(new BorderLayout(), Color.WHITE);
-    private final JPanel addDelPanel        = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.NORTH);
-    private final JPanel tablePodcastsPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.WEST);
+    private final JPanel addPodcastPanel    = new ColorPanel(new BorderLayout(), Color.WHITE, settingsPanelBot);
+    private final JPanel addDelPanel        = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.NORTH);
+    private final JPanel tablePodcastsPanel = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addPodcastPanel, BorderLayout.WEST);
 
     private ImageButton addPodcastButton;
     private ImageButton delPodcastButton;
@@ -54,14 +72,14 @@ public class UI extends JFrame {
     //Podcast add dialog
     private CustomDialog addDialog = null;
 
-    private final JPanel addDialogPanel    = createColorPanel(new BorderLayout(), Color.WHITE);
-    private final JPanel channelNamePanel  = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.NORTH);
-    private final JPanel addDelParamsPanel = createColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.WEST);
+    private final JPanel addDialogPanel    = new ColorPanel(new BorderLayout(), Color.WHITE);
+    private final JPanel channelNamePanel  = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.NORTH);
+    private final JPanel addDelParamsPanel = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, addDialogPanel, BorderLayout.WEST);
     private final JPanel paramsPanel       = new JPanel();
-    private final JPanel acceptPanel       = createColorPanel(new FlowLayout(FlowLayout.CENTER), Color.WHITE, addDialogPanel, BorderLayout.SOUTH);
+    private final JPanel acceptPanel       = new ColorPanel(new FlowLayout(FlowLayout.CENTER), Color.WHITE, addDialogPanel, BorderLayout.SOUTH);
 
-    private final JLabel channelNameLabel = createLabel("Podcast channel name:", smallFont, channelNamePanel);
-    private final JTextField channelNameInput  = createTextField("Insert channel name", smallFont, channelNamePanel);
+    private final JLabel channelNameLabel      = new Label("Podcast channel name:", smallFont, channelNamePanel);
+    private final JTextField channelNameInput  = new TextField("Insert channel name", smallFont, channelNamePanel);
 
     private ImageButton addParamButton;
     private ImageButton delParamButton;
@@ -72,9 +90,6 @@ public class UI extends JFrame {
 
     private final ArrayList<JTextField> paramTextFields = new ArrayList<>();
 
-
-    //Api key
-    JPasswordField apiInput = new JPasswordField(18);
 
     //Podcast table
     private DefaultTableModel podcastModel;
@@ -100,8 +115,8 @@ public class UI extends JFrame {
               Image frameIcon, Image settingImage, Image addImage, Image delImage, Image editImage, Image acceptImage,
               Image settingImageDark, Image addImageDark, Image delImageDark, Image editImageDark, Image acceptImageDark) {
 
-        this.frameHeight = frameHeight;
-        this.frameWidth  = frameWidth;
+        this.podcastFrameWidth  = frameWidth;
+        this.podcastFrameHeight = frameHeight;
 
         this.settingImage = settingImage;
         this.addImage     = addImage;
@@ -117,7 +132,7 @@ public class UI extends JFrame {
         this.editImageDark    = editImageDark;
         this.acceptImageDark  = acceptImageDark;
 
-        this.setSize(frameWidth, frameHeight);
+        this.setTitle("PodcastBoard");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new BorderLayout());
 
@@ -152,10 +167,35 @@ public class UI extends JFrame {
             i++;
         }
 
-        cl.show(cards, "1");
+        cl.show(cards, Integer.toString(currentCard));
     }
 
     public void changeCard() {
+
+        int width = settingsFrameWidth;
+        int height = settingsFrameHeight;
+
+        boolean checkedBox = windowScalableCheckbox.isSelected();
+
+        if (currentCard == 2) {
+            currentCard = 1;
+            if (!checkedBox) {
+                width = Integer.parseInt(windowWidthInput.getText());
+                height = Integer.parseInt(windowHeightInput.getText());
+            } else {
+                width = podcastFrameWidth;
+                height = podcastFrameHeight;
+            }
+        } else {
+            currentCard = 2;
+            podcastFrameWidth = getWidth();
+            podcastFrameHeight = getHeight();
+        }
+
+        setResizable(currentCard == 1 && checkedBox);
+
+        this.setSize(width, height);
+
         cl.next(cards);
     }
 //######################################################################################################################
@@ -186,7 +226,7 @@ public class UI extends JFrame {
         for (int i = 0; i < podcastAmount; i++) {
             JPanel thumbnail = createThumbnailPanel(podcastThumbnails.get(i), podcastTitles.get(i));
             if (thumbnail == null) {
-                System.err.println("ERR: thumbnail wan null");
+                System.err.println("ERR: thumbnail was null");
                 continue;
             }
             podcastThumbnailPanels.add(thumbnail);
@@ -204,10 +244,10 @@ public class UI extends JFrame {
         podcastFront.setBackground(Color.WHITE);
         podcastFront.setLayout(new BoxLayout(podcastFront, BoxLayout.Y_AXIS));
 
-        JLabel thumbnail  = new ImageLabel(podcastThumbnail, thumbnailWidth, thumbnailHeigth);
+        JLabel thumbnail  = new Label(podcastThumbnail, thumbnailWidth, thumbnailHeigth);
         podcastFront.add(thumbnail);
 
-        createLabel(podcastTitle, mediumFont, podcastFront);
+        new Label(podcastTitle, mediumFont, podcastFront);
         return podcastFront;
     }
 
@@ -228,16 +268,19 @@ public class UI extends JFrame {
         podcastsButton = new ImageButton(settingImage, settingImageDark,40, 40);
         settingsPanelTop.add(podcastsButton);
 
-        apiKeyPanel.add(apikeyText);
+        AbstractDocument windowWidthInputDoc = (AbstractDocument) windowWidthInput.getDocument();
+        AbstractDocument windowHeightInputDoc = (AbstractDocument) windowHeightInput.getDocument();
+
+        windowWidthInputDoc.setDocumentFilter(new NumberFilter());
+        windowHeightInputDoc.setDocumentFilter(new NumberFilter());
+
         apiKeyPanel.add(apiInput);
 
-        settingsPanelBot.add(apiKeyPanel);
-        settingsPanelBot.add(addPodcastPanel);
     }
 
     public void addPodcast() {
         clearDialogParams();
-        addDialog = new CustomDialog(frame, "Add podcast", addDialogPanel, acceptButton);
+        addDialog = new CustomDialog(this, "Add podcast", addDialogPanel, acceptButton);
         addDialog.setVisible(true);
     }
 
@@ -250,13 +293,50 @@ public class UI extends JFrame {
         return -1;
     }
 
-    public void editPodcast( Podcast podcast) {
+    public void editPodcast(Podcast podcast) {
         clearDialogParams();
-        addDialog = new CustomDialog(frame, "Edit podcast", addDialogPanel, acceptButton);
+        addDialog = new CustomDialog(this, "Edit podcast", addDialogPanel, acceptButton);
         channelNameInput.setText(podcast.getName());
         podcast.getParams().forEach(this::addParam);
         addDialog.setVisible(true);
     }
+
+    public void windowBoxChecked() {
+        windowScalePanel.setVisible(!windowScalableCheckbox.isSelected());
+    }
+
+    //GETTERS AND SETTERS SETTINGS
+
+    public void setWindowScalableCheckbox(boolean selected) {
+        windowScalableCheckbox.setSelected(selected);
+        setResizable(selected);
+        windowScalePanel.setVisible(!selected);
+    }
+
+    public void setWindowWidthInput(String Width) {
+        windowWidthInput.setText(Width);
+    }
+
+    public void setWindowHeightInput(String height) {
+        windowHeightInput.setText(height);
+    }
+
+    public boolean getWindowScalableCheckbox() {
+        return windowScalableCheckbox.isSelected();
+    }
+
+    public String getWindowWidthInput() {
+        return windowWidthInput.getText();
+    }
+
+    public String getWindowHeightInput() {
+        return windowHeightInput.getText();
+    }
+
+    public void updateFrameSize() {
+        this.setSize(Integer.parseInt(windowWidthInput.getText()), Integer.parseInt(windowHeightInput.getText()));
+    }
+
 
 //######################################################################################################################
 //PODCAST TABLE IN SETTINGS
@@ -362,15 +442,15 @@ public class UI extends JFrame {
     }
 
     private JTextField createParamPanel(JPanel parent) {
-        JPanel panel = createColorPanel(new FlowLayout(), Color.WHITE, parent);
-        createLabel("Search param:", smallFont, panel);
-        return createTextField("Insert Search param", smallFont, panel);
+        JPanel panel = new ColorPanel(new FlowLayout(), Color.WHITE, parent);
+        new Label("Search param:", smallFont, panel);
+        return new TextField("Insert Search param", smallFont, panel);
     }
 
     private JTextField createParamPanel(JPanel parent, String paramValue) {
-        JPanel panel = createColorPanel(new FlowLayout(), Color.WHITE, parent);
-        createLabel("Search param:", smallFont, panel);
-        return createTextField(paramValue, smallFont, panel);
+        JPanel panel = new ColorPanel(new FlowLayout(), Color.WHITE, parent);
+        new Label("Search param:", smallFont, panel);
+        return new TextField(paramValue, smallFont, panel);
     }
 
     public void delParam() {
@@ -414,6 +494,11 @@ public class UI extends JFrame {
         delPodcastButton.addActionListener(listenForDelPodcastButton);
         editPodcastButton.addActionListener(listenForEditPodcastButton);
     }
+
+    public void settingsButtonListeners(ActionListener listenForWindowCheckBox) {
+        windowScalableCheckbox.addActionListener(listenForWindowCheckBox);
+    }
+
 
 //######################################################################################################################
 //UTILITY
@@ -482,52 +567,95 @@ public class UI extends JFrame {
         }
     }
 
-    static class ImageLabel extends JLabel {
+    class Label extends JLabel {
         Icon icon;
 
-        public ImageLabel(Image image, int width, int heigth) {
+        public Label(Image image, int width, int heigth) {
             this.icon = new ImageIcon(image.getScaledInstance(width, heigth, Image.SCALE_DEFAULT));
             this.setIcon(icon);
         }
+
+        public Label(String text, Font font, JPanel parent) {
+            this.setText(text);
+            this.setFont(font);
+            parent.add(this);
+        }
     }
 
-    private JPanel createColorPanel(Object layout, Color color) {
-        JPanel panel = new JPanel((LayoutManager) layout);
-        panel.setBackground(color);
-        return panel;
+    class ColorPanel extends JPanel {
+
+        public ColorPanel(Object layout, Color color, JPanel parent, String position) {
+            this.setLayout((LayoutManager) layout);
+            this.setBackground(color);
+            parent.add(this, position);
+        }
+
+        public ColorPanel(Object layout, Color color, JPanel parent) {
+            this.setLayout((LayoutManager) layout);
+            this.setBackground(color);
+            parent.add(this);
+        }
+
+        public ColorPanel(Object layout, Color color) {
+            this.setLayout((LayoutManager) layout);
+            this.setBackground(color);
+        }
     }
 
-    private JPanel createColorPanel(Object layout, Color color, JPanel parent) {
-        JPanel panel = new JPanel((LayoutManager) layout);
-        panel.setBackground(color);
-        parent.add(panel);
-        return panel;
-    }
+    static class TextField extends JTextField {
+    JTextField textField;
 
-    private JPanel createColorPanel(Object layout, Color color, JPanel parent, String position) {
-        JPanel panel = new JPanel((LayoutManager) layout);
-        panel.setBackground(color);
-        parent.add(panel, position);
-        return panel;
-    }
+        public TextField(String text, Font font, JPanel parent) {
+            textField = this;
+            this.setText(text);
+            this.addMouseListener(new ListenForMouseClickTextField());
+            this.setFont(font);
+            parent.add(this);
+        }
 
-    private JTextField createTextField(String text, Font font, JPanel parent) {
-        JTextField textField = new JTextField(text);
-        textField.addMouseListener(new MouseAdapter() {
+        public TextField(String text, Font font) {
+            textField = this;
+            this.setText(text);
+            this.addMouseListener(new ListenForMouseClickTextField());
+            this.setFont(font);
+        }
+
+        public TextField(String text) {
+            textField = this;
+            this.setText(text);
+            this.addMouseListener(new ListenForMouseClickTextField());
+        }
+
+        class ListenForMouseClickTextField extends MouseAdapter {
             @Override
             public void mouseClicked(MouseEvent e) {
                 textField.selectAll();
             }
-        });
-        textField.setFont(font);
-        parent.add(textField);
-        return textField;
+        }
     }
 
-    private JLabel createLabel(String text, Font font, JPanel parent) {
-        JLabel label = new JLabel(text);
-        label.setFont(font);
-        parent.add(label);
-        return label;
+    class NumberFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
+            // Check if the inserted text contains only allowed characters (e.g., letters and digits)
+            if (text.matches("[0-9]*")) {
+                super.insertString(fb, offset, text, attr);
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            // Check if the replacement text contains only allowed characters (e.g., letters and digits)
+            if (text.matches("[0-9]*")) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+        }
+    }
+
+    static class CheckBox extends JCheckBox {
+        public CheckBox(JPanel parent, Color color) {
+            this.setBackground(color);
+            parent.add(this);
+        }
     }
 }

@@ -3,7 +3,6 @@ import com.google.gson.JsonParser;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -30,6 +29,7 @@ public class Model {
     //Path to storage files
     private final String API_KEY_RELATIVE_PATH = "\\resources\\API_KEY.txt";
     private final String PODCASTS_FILE_PATH    = "\\resources\\PODCASTS.ser";
+    private final String WINDOW_SIZE_PATH      = "\\resources\\WINDOW_SIZE.txt";
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -47,7 +47,10 @@ public class Model {
         if (model == null)
             model = new Model();
 
+
         return model;
+
+
     }
 
     public String getDirPath(String path) {
@@ -66,7 +69,22 @@ public class Model {
     public void setApiKey(String apiKeyUI) {
         if (this.apiKey.equals(apiKeyUI)) return;
         this.apiKey = apiKeyUI;
-        strToFile(getDirPath(API_KEY_RELATIVE_PATH), apiKeyUI);
+    }
+
+    public void saveData(String resolution) {
+        strToFile(getDirPath(API_KEY_RELATIVE_PATH), apiKey);
+        writePodcastListToFile();
+        strToFile(getDirPath(WINDOW_SIZE_PATH ), resolution);
+    }
+
+    public String[] windowSettingFromFile() {
+        String str = fileToStr(getDirPath(WINDOW_SIZE_PATH));
+
+        if (str == null) {
+            System.err.println("ERR: Window size file was null");
+            return new String[0];
+        }
+        return str.split(" ", 3);
     }
 
     public ArrayList<String> getPodcastTitles() {
@@ -138,7 +156,6 @@ public class Model {
             updatePodcastInfo(podcast);
             mostParams();
         });
-        writePodcastListToFile();
     }
 
     // this needs to be generalized
@@ -221,7 +238,7 @@ public class Model {
 
     private String searchVideoJson(String searchParam, String channelId, String apiKey) throws Exception {
         if (searchParam.isEmpty() || channelId.isEmpty() || apiKey.isEmpty()) {
-            System.err.println("ERR: searchParams, Channelid or apikeywas empty, in video search");
+            System.err.println("ERR: searchParams, Channelid or apikey was empty, in video search");
             return "";
         }
         String maxResults = "1";
@@ -262,6 +279,7 @@ public class Model {
             return fileStr.toString();
 
         } catch (IOException e) {
+            System.err.println("ERR: Runtime error in fileToStr");
             return null;
         }
     }

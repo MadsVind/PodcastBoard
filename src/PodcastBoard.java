@@ -45,6 +45,8 @@ public class PodcastBoard {
         Controller controller = new Controller(ui, model);
 
         ui.setVisible(true);
+
+
     }
 
 }

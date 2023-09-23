@@ -31,5 +31,6 @@ bin/
 
 
 ### Home Gay ###
-src/resources/API_KEY.txt
-src/resources/PODCASTS.ser
+src/resources/saveFiles/API_KEY.txt
+src/resources/saveFiles/PODCASTS.ser
+src/resources/saveFiles/WINDOW_SIZE.txt

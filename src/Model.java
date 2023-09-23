@@ -27,9 +27,10 @@ public class Model {
     private final String API_KEY_EP           = "&key=";
 
     //Path to storage files
-    private final String API_KEY_RELATIVE_PATH = "\\resources\\API_KEY.txt";
-    private final String PODCASTS_FILE_PATH    = "\\resources\\PODCASTS.ser";
-    private final String WINDOW_SIZE_PATH      = "\\resources\\WINDOW_SIZE.txt";
+    private final String API_KEY_RELATIVE_PATH = "\\resources\\saveFiles\\API_KEY.txt";
+    private final String PODCASTS_FILE_PATH    = "\\resources\\saveFiles\\PODCASTS.ser";
+    private final String WINDOW_SIZE_PATH      = "\\resources\\saveFiles\\WINDOW_SIZE.txt";
+
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 

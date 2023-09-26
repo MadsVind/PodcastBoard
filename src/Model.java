@@ -9,6 +9,8 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +29,9 @@ public class Model {
     private final String API_KEY_EP           = "&key=";
 
     //Path to storage files
-    private final String API_KEY_RELATIVE_PATH = "\\resources\\saveFiles\\API_KEY.txt";
-    private final String PODCASTS_FILE_PATH    = "\\resources\\saveFiles\\PODCASTS.ser";
-    private final String WINDOW_SIZE_PATH      = "\\resources\\saveFiles\\WINDOW_SIZE.txt";
+    private final String API_KEY_RELATIVE_PATH = "resources\\saveFiles\\API_KEY.txt";
+    private final String PODCASTS_FILE_PATH    = "resources\\saveFiles\\PODCASTS.ser";
+    private final String WINDOW_SIZE_PATH      = "resources\\saveFiles\\WINDOW_SIZE.txt";
 
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -55,7 +57,21 @@ public class Model {
     }
 
     public String getDirPath(String path) {
-        return new File("").getAbsolutePath() + "\\src" + path;
+        File file = new File(PodcastBoard.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+
+        String projectPath = file.getPath();
+
+
+        Path p = Paths.get(projectPath);
+
+        if (!file.isDirectory()) p = p.getParent();
+
+        System.out.println(p);
+        while (!p.getName(p.getNameCount()-1).toString().equals("PodcastBoard")) {
+            p = p.getParent();
+        }
+
+        return p + "\\" + path;
     }
 
     public String initApiKeyFromFile() {
@@ -67,9 +83,9 @@ public class Model {
         return apiKey;
     }
 
-    public void setApiKey(String apiKeyUI) {
-        if (this.apiKey.equals(apiKeyUI)) return;
-        this.apiKey = apiKeyUI;
+    public void setApiKey(String apiKey) {
+        if (apiKey.equals("")) return;
+        this.apiKey = apiKey;
     }
 
     public void saveData(String resolution) {
@@ -185,6 +201,7 @@ public class Model {
         File file = new File(filePath);
         if (file.exists()) file.delete();
         try  {
+            file.createNewFile();
             FileOutputStream fileoutputStream = new FileOutputStream(filePath);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileoutputStream);
             objectOutputStream.writeObject(podcasts);
@@ -286,8 +303,10 @@ public class Model {
     }
 
     public void strToFile(String path, String str) {
+        File file = new File(path);
         try {
-            FileWriter writer = new FileWriter(path);
+            file.createNewFile();
+            FileWriter writer = new FileWriter(file, false);
             writer.write(str);
             writer.close();
 

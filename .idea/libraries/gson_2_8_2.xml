@@ -2,10 +2,8 @@
   <library name="gson-2.8.2">
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/.idea/libraries/jar_files/gson-2.8.2.jar!/" />
-      <root url="jar://$PROJECT_DIR$/.idea/libraries/jar_files/base64-6.1.0.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="jar://$PROJECT_DIR$/.idea/libraries/jar_files/base64-6.1.0.jar!/" recursive="false" />
   </library>
 </component>

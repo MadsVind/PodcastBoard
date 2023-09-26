@@ -56,15 +56,19 @@ public class Controller {
     private void saveDataOnClose() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
+                System.out.println("Saving Data");
                 String str = Boolean.toString(ui.getWindowScalableCheckbox()) + " "
                         + ui.getWindowWidthInput() + " "
                         + ui.getWindowHeightInput();
                 model.saveData(str);
+                System.out.println("Saved");
             }
         }));
     }
 
     private Boolean isEmptyStrArr(String[] strArr) {
+        if (strArr.length < 1) return true;
+
         for (String str : strArr) {
             if (Objects.equals(str, " ")) return true;
         }
@@ -79,7 +83,7 @@ public class Controller {
         }
         else {
             apiKey = model.initApiKeyFromFile();
-            if (!apiKey.isEmpty()) {
+            if (apiKey != null) {
                 ui.setApiKey(apiKey);
                 return true;
             }

@@ -225,6 +225,7 @@ public class UI extends JFrame {
         podcastThumbnailPanels.clear();
         for (int i = 0; i < podcastAmount; i++) {
             JPanel thumbnail = createThumbnailPanel(podcastThumbnails.get(i), podcastTitles.get(i));
+
             if (thumbnail == null) {
                 System.err.println("ERR: thumbnail was null");
                 continue;

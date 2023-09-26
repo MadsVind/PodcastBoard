@@ -6,7 +6,9 @@ import java.util.Objects;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 
 public class Controller {
 
@@ -18,12 +20,12 @@ public class Controller {
 
     // update thread
     private int updateIntervalSec = 30;
-    private ScheduledExecutorService updateInfoThread = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture updateThread;
 
     public Controller(UI ui, Model model) {
         this.model = model;
         this.ui    = ui;
-
         this.ui.dialogButtonListeners(new ListenForAddParamButton(),
                                       new ListenForDelParamButton(),
                                       new ListenForAcceptButton());
@@ -40,8 +42,8 @@ public class Controller {
 
 
         loadInformation();
-        startUpdateThread();
-        saveDataOnClose();
+        updateThread = executorService.scheduleAtFixedRate(this::updateThread, 0, updateIntervalSec, TimeUnit.SECONDS);
+        closeThread();
     }
 
     private void loadInformation() {
@@ -56,6 +58,7 @@ public class Controller {
             ui.setWindowWidthInput(settingsArr[1]);
             ui.setWindowHeightInput(settingsArr[2]);
             ui.setUpdateSecInput(settingsArr[3]);
+            updateIntervalSec = Integer.parseInt(settingsArr[3]);
         } catch (Exception err) {
             System.err.println(err);
         }
@@ -63,14 +66,18 @@ public class Controller {
         ui.updateFrameSize();
     }
 
-    private void startUpdateThread() {
-        updateInfoThread.scheduleAtFixedRate(this::updatePodcastsData, 0, updateIntervalSec, TimeUnit.SECONDS);
+    private void updateThread() {
+        updatePodcastsData();
+        int tempInterval = Integer.parseInt(ui.getUpdateSecInput());
+        if (updateIntervalSec == tempInterval) return;
+        updateThread.cancel(false);
+        updateThread = executorService.scheduleAtFixedRate(this::updateThread, 0, updateIntervalSec, TimeUnit.SECONDS);
     }
 
-    private void saveDataOnClose() {
+    private void closeThread() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
-                updateInfoThread.shutdown();
+                updateThread.cancel(false);
                 System.out.println("Saving Data");
                 String str = ui.getWindowScalableCheckbox() + " "
                         + ui.getWindowWidthInput() + " "
@@ -115,14 +122,6 @@ public class Controller {
         if (!updateApiKey()) {
             System.err.println("ERR: No APIKEY");
             return;
-        }
-
-        int newInterval = Integer.parseInt(ui.getUpdateSecInput());
-        if (newInterval != updateIntervalSec) {
-            updateInfoThread.shutdown();
-            updateInfoThread = Executors.newSingleThreadScheduledExecutor();
-            updateIntervalSec = newInterval;
-            startUpdateThread();
         }
 
         model.updatePodcasts();

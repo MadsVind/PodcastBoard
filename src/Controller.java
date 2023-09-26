@@ -1,19 +1,23 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class Controller {
 
-    private Model model;
-    private UI ui;
+    private final Model model;
+    private final UI ui;
 
     //Edited
     private int editIndex;
+
+    private final int updateIntervalSec = 600;
+    private final ScheduledExecutorService updateInfoThread = Executors.newSingleThreadScheduledExecutor();
 
     public Controller(UI ui, Model model) {
         this.model = model;
@@ -35,6 +39,7 @@ public class Controller {
 
 
         loadInformation();
+        updateThread();
         saveDataOnClose();
     }
 
@@ -53,15 +58,21 @@ public class Controller {
         ui.updateFrameSize();
     }
 
+    private void updateThread() {
+        updateInfoThread.scheduleAtFixedRate(this::updatePodcastsData, 0, updateIntervalSec, TimeUnit.SECONDS);
+    }
+
     private void saveDataOnClose() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
+                updateInfoThread.shutdown();
                 System.out.println("Saving Data");
-                String str = Boolean.toString(ui.getWindowScalableCheckbox()) + " "
+                String str = ui.getWindowScalableCheckbox() + " "
                         + ui.getWindowWidthInput() + " "
                         + ui.getWindowHeightInput();
                 model.saveData(str);
                 System.out.println("Saved");
+
             }
         }));
     }
@@ -93,6 +104,7 @@ public class Controller {
 
 
     private void updatePodcastsData() {
+        System.out.println("update podcasts");
         if (!updateApiKey()) {
             System.err.println("ERR: No APIKEY");
             return;

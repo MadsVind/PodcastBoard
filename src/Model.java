@@ -31,7 +31,7 @@ public class Model {
     //Path to storage files
     private final String API_KEY_RELATIVE_PATH = "resources\\saveFiles\\API_KEY.txt";
     private final String PODCASTS_FILE_PATH    = "resources\\saveFiles\\PODCASTS.ser";
-    private final String WINDOW_SIZE_PATH      = "resources\\saveFiles\\WINDOW_SIZE.txt";
+    private final String SETTINGS_PATH      = "resources\\saveFiles\\SETTINGS.txt";
 
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -90,17 +90,17 @@ public class Model {
     public void saveData(String resolution) {
         strToFile(getDirPath(API_KEY_RELATIVE_PATH), apiKey);
         writePodcastListToFile();
-        strToFile(getDirPath(WINDOW_SIZE_PATH ), resolution);
+        strToFile(getDirPath(SETTINGS_PATH ), resolution);
     }
 
-    public String[] windowSettingFromFile() {
-        String str = fileToStr(getDirPath(WINDOW_SIZE_PATH));
+    public String[] settingFromFile() {
+        String str = fileToStr(getDirPath(SETTINGS_PATH));
 
         if (str == null) {
-            System.err.println("ERR: Window size file was null");
+            System.err.println("ERR: settings file was null");
             return new String[0];
         }
-        return str.split(" ", 3);
+        return str.split(" ");
     }
 
     public ArrayList<String> getPodcastTitles() {

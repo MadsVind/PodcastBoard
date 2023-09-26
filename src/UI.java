@@ -46,6 +46,10 @@ public class UI extends JFrame {
     private final JLabel apikeyText       = new Label("Apikey: ", smallFont, apiKeyPanel);
     private final JPasswordField apiInput = new JPasswordField(18);
 
+    private final JPanel updateSecPanel     = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
+    private final JTextField updateSecInput = new TextField("30", smallFont, updateSecPanel);
+    private final JLabel updateSecText      = new Label("Seconds Between Updating Podcast", smallFont, updateSecPanel);
+
     private final JPanel    windowScalablePanel    = new ColorPanel(new FlowLayout(FlowLayout.LEFT), Color.WHITE, settingsPanelBot);
     private final JCheckBox windowScalableCheckbox = new CheckBox(windowScalablePanel, Color.WHITE);
     private final JLabel    windowScalableLabel    = new Label("Window Scalable", smallFont, windowScalablePanel);
@@ -269,6 +273,9 @@ public class UI extends JFrame {
         podcastsButton = new ImageButton(settingImage, settingImageDark,40, 40);
         settingsPanelTop.add(podcastsButton);
 
+        AbstractDocument updateSecInputDoc = (AbstractDocument) updateSecInput.getDocument();
+        updateSecInputDoc.setDocumentFilter(new NumberFilter());
+
         AbstractDocument windowWidthInputDoc = (AbstractDocument) windowWidthInput.getDocument();
         AbstractDocument windowHeightInputDoc = (AbstractDocument) windowHeightInput.getDocument();
 
@@ -300,6 +307,14 @@ public class UI extends JFrame {
         channelNameInput.setText(podcast.getName());
         podcast.getParams().forEach(this::addParam);
         addDialog.setVisible(true);
+    }
+
+    public String getUpdateSecInput() {
+        return updateSecInput.getText();
+    }
+
+    public void setUpdateSecInput(String updateSec) {
+        this.updateSecInput.setText(updateSec);
     }
 
     public void windowBoxChecked() {

@@ -16,8 +16,9 @@ public class Controller {
     //Edited
     private int editIndex;
 
-    private final int updateIntervalSec = 600;
-    private final ScheduledExecutorService updateInfoThread = Executors.newSingleThreadScheduledExecutor();
+    // update thread
+    private int updateIntervalSec = 30;
+    private ScheduledExecutorService updateInfoThread = Executors.newSingleThreadScheduledExecutor();
 
     public Controller(UI ui, Model model) {
         this.model = model;
@@ -39,7 +40,7 @@ public class Controller {
 
 
         loadInformation();
-        updateThread();
+        startUpdateThread();
         saveDataOnClose();
     }
 
@@ -48,17 +49,21 @@ public class Controller {
         updateApiKey();
         updatePodcastsShown();
 
-        String[] settingsArr = model.windowSettingFromFile();
+        String[] settingsArr = model.settingFromFile();
 
-        if (!isEmptyStrArr(settingsArr)) {
+        try {
             ui.setWindowScalableCheckbox(Boolean.parseBoolean(settingsArr[0]));
             ui.setWindowWidthInput(settingsArr[1]);
             ui.setWindowHeightInput(settingsArr[2]);
+            ui.setUpdateSecInput(settingsArr[3]);
+        } catch (Exception err) {
+            System.err.println(err);
         }
+
         ui.updateFrameSize();
     }
 
-    private void updateThread() {
+    private void startUpdateThread() {
         updateInfoThread.scheduleAtFixedRate(this::updatePodcastsData, 0, updateIntervalSec, TimeUnit.SECONDS);
     }
 
@@ -69,7 +74,8 @@ public class Controller {
                 System.out.println("Saving Data");
                 String str = ui.getWindowScalableCheckbox() + " "
                         + ui.getWindowWidthInput() + " "
-                        + ui.getWindowHeightInput();
+                        + ui.getWindowHeightInput() + " "
+                        + ui.getUpdateSecInput();
                 model.saveData(str);
                 System.out.println("Saved");
 
@@ -105,10 +111,20 @@ public class Controller {
 
     private void updatePodcastsData() {
         System.out.println("update podcasts");
+
         if (!updateApiKey()) {
             System.err.println("ERR: No APIKEY");
             return;
         }
+
+        int newInterval = Integer.parseInt(ui.getUpdateSecInput());
+        if (newInterval != updateIntervalSec) {
+            updateInfoThread.shutdown();
+            updateInfoThread = Executors.newSingleThreadScheduledExecutor();
+            updateIntervalSec = newInterval;
+            startUpdateThread();
+        }
+
         model.updatePodcasts();
         updatePodcastsShown();
     }

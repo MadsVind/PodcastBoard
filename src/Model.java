@@ -66,7 +66,6 @@ public class Model {
 
         if (!file.isDirectory()) p = p.getParent();
 
-        System.out.println(p);
         while (!p.getName(p.getNameCount()-1).toString().equals("PodcastBoard")) {
             p = p.getParent();
         }
@@ -152,7 +151,6 @@ public class Model {
 
     public void updatePodcastInfo(Podcast podcast) {
         try {
-            System.out.println("updatePodcastInfo");
             String searchChannelJson = searchChannelJson(podcast.getName().replaceAll(" ", "%20"), apiKey);
             if (jsonByHitIndex("code", 0, searchChannelJson).equals("403"))
                 System.err.println("ERR: The request cannot be completed because you have exceeded your apikey quota");
@@ -255,18 +253,19 @@ public class Model {
     }
 
     private String searchVideoJson(String searchParam, String channelId, String apiKey) throws Exception {
-        if (searchParam.isEmpty() || channelId.isEmpty() || apiKey.isEmpty()) {
-            System.err.println("ERR: searchParams, Channelid or apikey was empty, in video search");
+        if (channelId.isEmpty() || apiKey.isEmpty()) {
+            System.err.println("ERR: Channelid or apikey was empty, in video search");
             return "";
         }
+
         String maxResults = "1";
         String order = "date";
-        return getRequestJson(BY_CHANNEL_SEARCH_EP + channelId +
-                MAX_RESULTS_EP + maxResults +
-                ORDER_EP + order +
-                SEARCH_PARAM_EP + searchParam +
-                PART_SNIPPET_EP +
-                API_KEY_EP + apiKey);
+
+        String str = BY_CHANNEL_SEARCH_EP + channelId + MAX_RESULTS_EP + maxResults + ORDER_EP + order;
+        if (!searchParam.isEmpty()) str += SEARCH_PARAM_EP + searchParam;
+        str += PART_SNIPPET_EP + API_KEY_EP + apiKey;
+
+        return getRequestJson(str);
     }
 
     private String searchChannelJson(String channelName, String apiKey) throws Exception {
